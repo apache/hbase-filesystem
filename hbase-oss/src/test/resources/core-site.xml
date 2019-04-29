@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~  or more contributor license agreements.  See the NOTICE file
+  ~  distributed with this work for additional information
+  ~  regarding copyright ownership.  The ASF licenses this file
+  ~  to you under the Apache License, Version 2.0 (the
+  ~  "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<configuration>
+
+  <!--
+    By default the tests run against a mocked S3 client. To run these against
+    the real Amazon S3 service or another object store, set fs.hboss.data.uri
+    and any required credentials in auth-keys.xml. e.g.:
+
+      <configuration>
+        <property>
+          <name>fs.hboss.data.uri</name>
+          <value>s3a://.../</value>
+        </property>
+
+        <property>
+          <name>fs.s3a.secret.key</name>
+          <value>...</value>
+        </property>
+
+        <property>
+          <name>fs.s3a.access.key</name>
+          <value>...</value>
+        </property>
+      </configuration>
+
+    S3Guard will also be configured to the LocalMetadataStore implementation
+    by default. You may wish to configure DynamoDBMetadataStore for integration
+    or if S3Guard is not needed (S3-compatible appliance, for instance), you
+    can disable it by configuring NullMetadataStore explicitly (see below).
+  -->
+
+  <!--
+  <property>
+    <name>fs.s3a.metadatastore.impl</name>
+    <value>org.apache.hadoop.fs.s3a.s3guard.NullMetadataStore</value>
+    <description>Uncomment to disable S3Guard entirely</description>
+  </property>
+  -->
+
+  <include xmlns="http://www.w3.org/2001/XInclude" href="auth-keys.xml">
+    <fallback/>
+  </include>
+
+</configuration>

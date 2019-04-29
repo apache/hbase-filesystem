@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apache.hbase</groupId>
+  <artifactId>hbase-filesystem</artifactId>
+  <version>1.0.0-alpha1-SNAPSHOT</version>
+
+  <name>Apache HBase File-System</name>
+  <description>
+    This project houses projects (currently just hbase-oss) that work at the
+    Apache Hadoop FileSystem layer to meet Apache HBase's needs. This work is
+    experimental, and may eventually be replaced by other initiatives in HBase.
+    It is therefore released separately.
+  </description>
+  <packaging>pom</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <aws-java-sdk.version>1.11.525</aws-java-sdk.version>
+    <commons-io.version>2.5</commons-io.version>
+    <commons-lang3.version>3.6</commons-lang3.version>
+    <curator.version>4.0.0</curator.version>
+    <hadoop.version>3.0.0</hadoop.version>
+    <hbase.version>3.0.0-SNAPSHOT</hbase.version>
+    <junit.version>4.12</junit.version>
+    <slf4j.version>1.7.25</slf4j.version>
+    <zookeeper.version>3.4.10</zookeeper.version>
+  </properties>
+
+  <modules>
+    <module>hbase-oss</module>
+  </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.1</version>
+          <configuration>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <reuseForks>false</reuseForks>
+            <systemProperties>
+              <test.unique.fork.id>fork-000${surefire.forkNumber}</test.unique.fork.id>
+            </systemProperties>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
