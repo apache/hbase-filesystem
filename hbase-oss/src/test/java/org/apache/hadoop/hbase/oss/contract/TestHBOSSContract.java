@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystemContractBaseTest;
 import org.apache.hadoop.fs.Path;
@@ -31,6 +25,12 @@ import org.apache.hadoop.hbase.oss.HBaseObjectStoreSemantics;
 import org.apache.hadoop.hbase.oss.TestUtils;
 import org.junit.Assume;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestHBOSSContract extends FileSystemContractBaseTest {
 

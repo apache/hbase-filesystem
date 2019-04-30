@@ -25,7 +25,11 @@ import org.apache.hadoop.hbase.HBaseZKTestingUtility;
 import org.apache.hadoop.hbase.oss.Constants;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.ZKTreeLockManager;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
 public class EmbeddedZK {
 
   private static HBaseZKTestingUtility util = null;

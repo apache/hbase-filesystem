@@ -21,6 +21,8 @@ package org.apache.hadoop.hbase.oss.sync;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 
 /**
  * Bypasses all synchronization to effectively make HBOSS operations no-ops.
@@ -28,6 +30,8 @@ import org.apache.hadoop.fs.Path;
  * Can be enabled in JUnit tests with -Pnull to reproduce the problems HBOSS is
  * intended to fix.
  */
+@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceStability.Unstable
 public class NullTreeLockManager extends TreeLockManager {
 
   public void initialize(FileSystem fs) {

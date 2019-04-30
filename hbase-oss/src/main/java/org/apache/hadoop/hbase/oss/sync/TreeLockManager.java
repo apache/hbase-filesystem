@@ -30,6 +30,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.Constants;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,8 @@ import org.slf4j.LoggerFactory;
  * with an implementation of read / write locks and the methods to check the
  * status of locks above and below FileSystem Paths.
  */
+@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceStability.Unstable
 public abstract class TreeLockManager {
   private static final Logger LOG =
         LoggerFactory.getLogger(TreeLockManager.class);

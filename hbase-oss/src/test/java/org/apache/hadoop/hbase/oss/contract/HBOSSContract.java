@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,11 +26,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.Constants;
 import org.apache.hadoop.hbase.oss.HBaseObjectStoreSemantics;
 import org.apache.hadoop.hbase.oss.TestUtils;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
 public class HBOSSContract extends AbstractFSContract {
   private static final Logger LOG =
       LoggerFactory.getLogger(HBOSSContract.class);

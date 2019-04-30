@@ -24,5 +24,5 @@
 @InterfaceStability.Unstable
 package org.apache.hadoop.hbase.oss;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;

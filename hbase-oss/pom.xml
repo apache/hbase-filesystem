@@ -17,7 +17,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apache.hbase</groupId>
+    <groupId>org.apache.hbase.filesystem</groupId>
     <artifactId>hbase-filesystem</artifactId>
     <version>1.0.0-alpha1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
@@ -40,33 +40,18 @@
   <profiles>
     <profile>
       <id>null</id>
-      <activation>
-        <property>
-          <name>null</name>
-        </property>
-      </activation>
       <properties>
         <fs.hboss.sync.impl>org.apache.hadoop.hbase.oss.sync.NullTreeLockManager</fs.hboss.sync.impl>
       </properties>
     </profile>
     <profile>
       <id>local</id>
-      <activation>
-        <property>
-          <name>local</name>
-        </property>
-      </activation>
       <properties>
         <fs.hboss.sync.impl>org.apache.hadoop.hbase.oss.sync.LocalTreeLockManager</fs.hboss.sync.impl>
       </properties>
     </profile>
     <profile>
       <id>zk</id>
-      <activation>
-        <property>
-          <name>zk</name>
-        </property>
-      </activation>
       <properties>
         <fs.hboss.sync.impl>org.apache.hadoop.hbase.oss.sync.ZKTreeLockManager</fs.hboss.sync.impl>
       </properties>
@@ -111,6 +96,18 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.yetus</groupId>
+      <artifactId>audience-annotations</artifactId>
+      <version>${audience-annotations.version}</version>
       <scope>compile</scope>
     </dependency>
 

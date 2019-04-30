@@ -24,6 +24,8 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 
 /**
  * Provides convenience data structures to help ensure that locks are closed
@@ -33,6 +35,8 @@ import org.apache.hadoop.fs.RemoteIterator;
  * or in the event of any exception. LockedFSDataOutputStream will release the
  * lock when the stream gets closed.
  */
+@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceStability.Unstable
 public interface AutoLock extends AutoCloseable {
   public void close() throws IOException;
 

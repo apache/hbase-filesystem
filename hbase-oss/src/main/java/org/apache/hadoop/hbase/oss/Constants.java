@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hbase.oss;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 
+@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceStability.Unstable
 public class Constants  {
   public static final String DATA_URI = "fs.hboss.data.uri";
   public static final String SYNC_IMPL = "fs.hboss.sync.impl";

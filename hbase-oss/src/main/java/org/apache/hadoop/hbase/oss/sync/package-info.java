@@ -19,9 +19,9 @@
 /**
  * Synchronization utilities for use in HBaseObjectStoreSemantics.
  */
-@InterfaceAudience.Private
+@InterfaceAudience.LimitedPrivate({"HBase"})
 @InterfaceStability.Unstable
 package org.apache.hadoop.hbase.oss.sync;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;

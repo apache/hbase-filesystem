@@ -58,12 +58,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.s3a.S3ClientFactory;
 import org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hbase.oss.Constants.*;
 import static org.apache.hadoop.fs.s3a.Constants.*;
 
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
 public class EmbeddedS3 {
 
   public static boolean usingEmbeddedS3 = false;

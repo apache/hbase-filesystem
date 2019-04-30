@@ -24,6 +24,8 @@ import java.net.URISyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -31,6 +33,8 @@ import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
 public class TestUtils {
   public static final Logger LOG =
         LoggerFactory.getLogger(TestUtils.class);

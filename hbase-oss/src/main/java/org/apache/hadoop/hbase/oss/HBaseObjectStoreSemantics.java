@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.ContentSummary;
@@ -58,6 +56,8 @@ import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedFSDataOutputStream;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.util.Progressable;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +90,8 @@ import org.slf4j.LoggerFactory;
  *   </li>
  * </ul>
  */
+@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceStability.Unstable
 public class HBaseObjectStoreSemantics extends FileSystem {
   private static final Logger LOG =
         LoggerFactory.getLogger(HBaseObjectStoreSemantics.class);
@@ -127,8 +129,6 @@ public class HBaseObjectStoreSemantics extends FileSystem {
     return fs.getUri();
   }
 
-  @InterfaceAudience.Public
-  @InterfaceStability.Evolving
   @Override
   public String getCanonicalServiceName() {
     return fs.getCanonicalServiceName();
@@ -759,7 +759,6 @@ public class HBaseObjectStoreSemantics extends FileSystem {
     }
   }
 
-  @InterfaceAudience.LimitedPrivate({"HDFS", "Hive"})
   public void access(Path path, FsAction mode) throws AccessControlException,
         FileNotFoundException, IOException {
     try (AutoLock l = sync.lock(path)) {

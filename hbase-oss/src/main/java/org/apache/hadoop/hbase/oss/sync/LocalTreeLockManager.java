@@ -28,6 +28,8 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,8 @@ import org.slf4j.LoggerFactory;
  *
  * Can be enabled in JUnit tests with -Plocal (although it's the default).
  */
+@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceStability.Unstable
 public class LocalTreeLockManager extends TreeLockManager {
   private static final Logger LOG =
         LoggerFactory.getLogger(LocalTreeLockManager.class);
