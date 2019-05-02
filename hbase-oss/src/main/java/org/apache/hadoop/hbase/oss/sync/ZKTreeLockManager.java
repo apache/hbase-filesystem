@@ -19,17 +19,20 @@
 package org.apache.hadoop.hbase.oss.sync;
 
 import java.io.IOException;
-import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.curator.RetryPolicy;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.framework.recipes.locks.InterProcessReadWriteLock;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -38,6 +41,7 @@ import org.apache.hadoop.hbase.oss.Constants;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +107,7 @@ public class ZKTreeLockManager extends TreeLockManager {
   @Override
   protected void writeLock(Path p) throws IOException {
     try {
+      LOG.debug("writeLock {} acquire", p);
       get(p).writeLock().acquire();
     } catch (Exception e) {
       throw new IOException("Exception during write locking of path " + p, e);
@@ -112,6 +117,7 @@ public class ZKTreeLockManager extends TreeLockManager {
   @Override
   protected void writeUnlock(Path p) throws IOException {
     try {
+      LOG.debug("writeLock {} release", p);
       get(p).writeLock().release();
     } catch(IllegalMonitorStateException e) {
       // Reentrant locks might be acquired multiple times
@@ -124,6 +130,7 @@ public class ZKTreeLockManager extends TreeLockManager {
 
   @Override
   protected void readLock(Path p) throws IOException {
+    LOG.debug("readLock {} acquire", p);
     try {
       get(p).readLock().acquire();
     } catch (Exception e) {
@@ -133,6 +140,7 @@ public class ZKTreeLockManager extends TreeLockManager {
 
   @Override
   protected void readUnlock(Path p) throws IOException {
+    LOG.debug("readLock {} release", p);
     try {
       get(p).readLock().release();
     } catch(IllegalMonitorStateException e) {
@@ -146,6 +154,7 @@ public class ZKTreeLockManager extends TreeLockManager {
 
   @Override
   protected boolean writeLockAbove(Path p) throws IOException {
+    LOG.debug("Checking for write lock above {}", p);
     while (!p.isRoot()) {
       p = p.getParent();
       if (isLocked(get(p).writeLock())) {
@@ -173,11 +182,35 @@ public class ZKTreeLockManager extends TreeLockManager {
     try {
       ZKPaths.deleteChildren(curator.getZookeeperClient().getZooKeeper(),
             p.toString(), !p.isRoot());
+      // Before this method is called, we have a guarantee that 
+      //   1. There are no write locks above or below us
+      //   2. There are no read locks below us
+      // As such, we can just remove locks beneath us as we find them.
+      removeInMemoryLocks(p);
     } catch (KeeperException.NoNodeException e) {
       LOG.warn("Lock not found during recursive delete: {}", p);
     } catch (Exception e) {
       throw new IOException("Exception while deleting lock " + p, e);
     }
+  }
+
+  private synchronized void removeInMemoryLocks(Path p) {
+    Iterator<Entry<Path,InterProcessReadWriteLock>> iter = lockCache.entrySet().iterator();
+    while (iter.hasNext()) {
+      Entry<Path,InterProcessReadWriteLock> entry = iter.next();
+      if (isBeneath(p, entry.getKey())) {
+        LOG.trace("Removing lock for {}", entry.getKey());
+        iter.remove();
+      }
+    }
+  }
+
+  private boolean isBeneath(Path parent, Path other) {
+    if (parent.equals(other)) {
+      return false;
+    }
+    // Is `other` fully contained in some path beneath the parent.
+    return 0 == other.toString().indexOf(parent.toString());
   }
 
   private boolean writeLockBelow(Path p, boolean firstLevel) throws IOException {
@@ -251,6 +284,33 @@ public class ZKTreeLockManager extends TreeLockManager {
       throw new IOException("Exception while testing a lock", e);
     }
     return true;
+  }
+
+  public String summarizeLocks() {
+    StringBuilder sb = new StringBuilder();
+    Map<Path,InterProcessReadWriteLock> cache = getUnmodifiableCache();
+    for (Entry<Path,InterProcessReadWriteLock> entry : cache.entrySet()) {
+      sb.append(entry.getKey()).append("=").append(describeLock(entry.getValue()));
+    }
+    return sb.toString();
+  }
+
+  String describeLock(InterProcessReadWriteLock lock) {
+    if (lock == null) {
+      return "null";
+    }
+    InterProcessMutex rlock = lock.readLock();
+    InterProcessMutex wlock = lock.writeLock();
+    StringBuilder sb = new StringBuilder();
+    sb.append("ReadLock[heldByThisThread=").append(rlock.isOwnedByCurrentThread());
+    sb.append(", heldInThisProcess=").append(rlock.isAcquiredInThisProcess()).append("]");
+    sb.append(" WriteLock[heldByThisThread=").append(wlock.isOwnedByCurrentThread());
+    sb.append(", heldInThisProcess=").append(wlock.isAcquiredInThisProcess()).append("]");
+    return sb.toString();
+  }
+
+  public synchronized Map<Path,InterProcessReadWriteLock> getUnmodifiableCache() {
+    return Collections.unmodifiableMap(lockCache);
   }
 
   private synchronized InterProcessReadWriteLock get(Path path) throws IOException {

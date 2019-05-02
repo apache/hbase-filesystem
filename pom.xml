@@ -39,8 +39,9 @@
     <commons-io.version>2.5</commons-io.version>
     <commons-lang3.version>3.6</commons-lang3.version>
     <curator.version>4.0.0</curator.version>
-    <hadoop.version>3.0.0</hadoop.version>
-    <hbase.version>3.0.0-SNAPSHOT</hbase.version>
+    <hadoop.version>3.2.0</hadoop.version>
+    <hbase.version>2.1.4</hbase.version>
+    <hbase-thirdparty.version>2.2.0</hbase-thirdparty.version>
     <junit.version>4.12</junit.version>
     <slf4j.version>1.7.25</slf4j.version>
     <zookeeper.version>3.4.10</zookeeper.version>

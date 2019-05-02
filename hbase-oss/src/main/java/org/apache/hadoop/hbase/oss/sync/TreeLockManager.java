@@ -49,11 +49,12 @@ public abstract class TreeLockManager {
   public static synchronized TreeLockManager get(FileSystem fs)
         throws IOException {
     Configuration conf = fs.getConf();
-    Class<?> impl = conf.getClass(Constants.SYNC_IMPL, TreeLockManager.class); // <?>
+    Class<? extends TreeLockManager> impl = conf.getClass(
+        Constants.SYNC_IMPL, TreeLockManager.class, TreeLockManager.class);
     TreeLockManager instance = null;
     Exception cause = null;
     try {
-      instance = (TreeLockManager)impl.newInstance();
+      instance = impl.newInstance();
     } catch (Exception e) {
       cause = e;
     }
@@ -327,6 +328,7 @@ public abstract class TreeLockManager {
       public void close() throws IOException {
         LOG.debug("About to recursively delete locks: {}", path);
         recursiveDelete(path);
+        writeUnlock(path);
       }
     };
   }

@@ -60,7 +60,11 @@ public class LocalTreeLockManager extends TreeLockManager {
   @Override
   protected void writeUnlock(Path p) throws IOException {
     try {
-      index.get(p).lock.writeLock().unlock();
+      LockNode node = index.get(p);
+      // Node to unlock may already be gone after deletes
+      if (node != null) {
+        node.lock.writeLock().unlock();
+      }
     } catch(IllegalMonitorStateException e) {
       // Reentrant locks might be acquired multiple times
       LOG.error("Tried to release unacquired write lock: {}", p);

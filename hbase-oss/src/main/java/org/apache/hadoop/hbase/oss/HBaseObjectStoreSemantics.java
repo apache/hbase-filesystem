@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.hbase.oss;
 
-import java.util.EnumSet;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
@@ -50,12 +48,13 @@ import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
-import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedFSDataOutputStream;
+import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
+import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
@@ -119,6 +118,11 @@ public class HBaseObjectStoreSemantics extends FileSystem {
 
     fs = FileSystem.get(name, internalConf);
     sync = TreeLockManager.get(fs);
+  }
+
+  @VisibleForTesting
+  TreeLockManager getLockManager() {
+    return sync;
   }
 
   public String getScheme() {

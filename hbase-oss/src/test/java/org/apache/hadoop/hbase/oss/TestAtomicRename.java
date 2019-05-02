@@ -74,8 +74,13 @@ public class TestAtomicRename extends HBaseObjectStoreSemanticsTest {
             hboss.exists(renameSource));
       renameThread.join();
     } finally {
-      hboss.delete(renameSource);
-      hboss.delete(renameTarget);
+      try {
+        hboss.delete(renameSource);
+        hboss.delete(renameTarget);
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw e;
+      }
     }
   }
 

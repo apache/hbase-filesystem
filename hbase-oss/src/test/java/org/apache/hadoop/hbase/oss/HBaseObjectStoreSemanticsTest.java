@@ -18,16 +18,13 @@
 
 package org.apache.hadoop.hbase.oss;
 
-import java.net.URI;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +35,7 @@ public class HBaseObjectStoreSemanticsTest {
         LoggerFactory.getLogger(HBaseObjectStoreSemanticsTest.class);
 
   protected HBaseObjectStoreSemantics hboss = null;
+  protected TreeLockManager sync = null;
 
   public Path testPathRoot() {
     return TestUtils.testPathRoot(hboss);
@@ -55,6 +53,7 @@ public class HBaseObjectStoreSemanticsTest {
   public void setup() throws Exception {
     Configuration conf = new Configuration();
     hboss = TestUtils.getFileSystem(conf);
+    sync = hboss.getLockManager();
     hboss.mkdirs(testPathRoot());
   }
 
