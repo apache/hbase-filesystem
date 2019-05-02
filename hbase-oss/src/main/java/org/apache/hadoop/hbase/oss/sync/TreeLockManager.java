@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * with an implementation of read / write locks and the methods to check the
  * status of locks above and below FileSystem Paths.
  */
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.Private
 @InterfaceStability.Unstable
 public abstract class TreeLockManager {
   private static final Logger LOG =

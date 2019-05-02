@@ -21,7 +21,7 @@ package org.apache.hadoop.hbase.oss;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class Constants  {
   public static final String DATA_URI = "fs.hboss.data.uri";

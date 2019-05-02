@@ -20,7 +20,7 @@
  * An implementation of org.apache.hadoop.fs.FileSystem that wraps object store
  * client implementations to provide additional semantics required by HBase.
  */
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.Private
 @InterfaceStability.Unstable
 package org.apache.hadoop.hbase.oss;
 

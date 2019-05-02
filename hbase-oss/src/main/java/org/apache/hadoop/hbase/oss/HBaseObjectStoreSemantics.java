@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hbase.HBaseInterfaceAudience;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedFSDataOutputStream;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
@@ -89,7 +90,7 @@ import org.slf4j.LoggerFactory;
  *   </li>
  * </ul>
  */
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)
 @InterfaceStability.Unstable
 public class HBaseObjectStoreSemantics extends FileSystem {
   private static final Logger LOG =

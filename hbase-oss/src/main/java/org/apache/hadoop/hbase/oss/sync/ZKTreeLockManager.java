@@ -37,6 +37,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseInterfaceAudience;
 import org.apache.hadoop.hbase.oss.Constants;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
@@ -53,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * Can be enabled in JUnit tests with -Pzk. If {@link Constants.ZK_CONN_STRING}
  * isn't specified, an embedded ZooKeeper process will be spun up for tests.
  */
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)
 @InterfaceStability.Unstable
 public class ZKTreeLockManager extends TreeLockManager {
   private static final Logger LOG =

@@ -93,18 +93,16 @@ public class EmbeddedS3 {
   /**
    * Replaces the default S3ClientFactory to inject an EmbeddedAmazonS3
    * instance. This is currently a private API in Hadoop, but is the same method
-   * used by S3Guard's inconsistency-injection tests.
+   * used by S3Guard's inconsistency-injection tests. The method signature
+   * defined in the interface varies depending on the Hadoop version.
    */
   public static class EmbeddedS3ClientFactory implements S3ClientFactory {
-    @Override
     public AmazonS3 createS3Client(URI name) {
       AmazonS3 s3 = new EmbeddedAmazonS3();
       s3.createBucket(BUCKET);
       return s3;
     }
 
-    // Required by versions of Hadoop newer than 3.0.x
-    //@Override
     public AmazonS3 createS3Client(URI name,
         String bucket,
         AWSCredentialsProvider credentialSet,
@@ -114,8 +112,6 @@ public class EmbeddedS3 {
       return s3;
     }
 
-    // Required by versions of Hadoop newer than 3.0.x
-    //@Override
     public AmazonS3 createS3Client(URI name,
         String bucket,
         AWSCredentialsProvider credentialSet) {

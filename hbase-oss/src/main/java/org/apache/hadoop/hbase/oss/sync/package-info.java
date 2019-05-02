@@ -19,7 +19,7 @@
 /**
  * Synchronization utilities for use in HBaseObjectStoreSemantics.
  */
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.Private
 @InterfaceStability.Unstable
 package org.apache.hadoop.hbase.oss.sync;
 

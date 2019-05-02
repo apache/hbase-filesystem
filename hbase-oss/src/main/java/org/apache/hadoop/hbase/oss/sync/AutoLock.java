@@ -35,7 +35,7 @@ import org.apache.yetus.audience.InterfaceStability;
  * or in the event of any exception. LockedFSDataOutputStream will release the
  * lock when the stream gets closed.
  */
-@InterfaceAudience.LimitedPrivate({"HBase"})
+@InterfaceAudience.Private
 @InterfaceStability.Unstable
 public interface AutoLock extends AutoCloseable {
   public void close() throws IOException;
