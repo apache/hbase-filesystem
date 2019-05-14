@@ -43,9 +43,10 @@ import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesti
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation based on Apache Curator and Apache ZooKeeper. This allows
@@ -87,6 +88,7 @@ public class ZKTreeLockManager extends TreeLockManager {
     String zookeeperConnectionString = conf.get(Constants.ZK_CONN_STRING);
     curator = CuratorFrameworkFactory.newClient(zookeeperConnectionString, retryPolicy);
     curator.start();
+    waitForCuratorToConnect();
 
     setRoot();
     try {
@@ -99,6 +101,19 @@ public class ZKTreeLockManager extends TreeLockManager {
     zookeeperConnectionString += root;
     curator = CuratorFrameworkFactory.newClient(zookeeperConnectionString, retryPolicy);
     curator.start();
+    waitForCuratorToConnect();
+  }
+
+  private void waitForCuratorToConnect() {
+    try {
+      if (!requireNonNull(curator).blockUntilConnected(30, TimeUnit.SECONDS)) {
+        throw new RuntimeException("Failed to connect to ZooKeeper");
+      }
+    } catch (InterruptedException e) {
+      LOG.warn("Interrupted waiting to connect to ZooKeeper", e);
+      Thread.currentThread().interrupt();
+      return;
+    }
   }
 
   @Override
