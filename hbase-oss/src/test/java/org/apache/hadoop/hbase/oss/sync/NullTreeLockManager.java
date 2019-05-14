@@ -21,6 +21,7 @@ package org.apache.hadoop.hbase.oss.sync;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 
 /**
  * Bypasses all synchronization to effectively make HBOSS operations no-ops.
@@ -56,12 +57,14 @@ public class NullTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  protected boolean writeLockBelow(Path p) {
+  @VisibleForTesting
+  public boolean writeLockBelow(Path p, Depth depth) {
     return false;
   }
 
   @Override
-  protected boolean readLockBelow(Path p) {
+  @VisibleForTesting
+  public boolean readLockBelow(Path p, Depth depth) {
     return false;
   }
 

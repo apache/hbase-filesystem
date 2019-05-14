@@ -30,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.Constants;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
@@ -45,6 +46,10 @@ import org.slf4j.LoggerFactory;
 public abstract class TreeLockManager {
   private static final Logger LOG =
         LoggerFactory.getLogger(TreeLockManager.class);
+
+  public static enum Depth {
+    DIRECTORY, RECURSIVE
+  }
 
   public static synchronized TreeLockManager get(FileSystem fs)
         throws IOException {
@@ -78,7 +83,7 @@ public abstract class TreeLockManager {
    * and filesystems, and assumes the URI scheme mapping is consistent
    * everywhere.
    */
-  private Path norm(Path path) {
+  public Path norm(Path path) {
     URI uri = fs.makeQualified(path).toUri();
     String uriScheme = uri.getScheme();
     String uriHost = uri.getHost();
@@ -96,6 +101,7 @@ public abstract class TreeLockManager {
    * Convenience function for calling norm on an array. Returned copy of the
    * array will also be sorted for deadlock avoidance.
    */
+  @VisibleForTesting
   private Path[] norm(Path[] paths) {
     Path[] newPaths = new Path[paths.length];
     for (int i = 0; i < paths.length; i++) {
@@ -177,7 +183,8 @@ public abstract class TreeLockManager {
    * @param p Path to check
    * @return True if a lock is found, false otherwise
    */
-  protected abstract boolean writeLockBelow(Path p) throws IOException;
+  @VisibleForTesting
+  public abstract boolean writeLockBelow(Path p, Depth depth) throws IOException;
 
   /**
    * Checks for the presence of a write lock on all child directories of the
@@ -186,7 +193,8 @@ public abstract class TreeLockManager {
    * @param p Path to check
    * @return True if a lock is found, false otherwise
    */
-  protected abstract boolean readLockBelow(Path p) throws IOException;
+  @VisibleForTesting
+  public abstract boolean readLockBelow(Path p, Depth depth) throws IOException;
 
   /**
    * Recursively cleans up locks that won't be used again.
@@ -224,13 +232,13 @@ public abstract class TreeLockManager {
    *
    * @param path Path to lock
    */
-  protected void treeWriteLock(Path p) throws IOException {
+  protected void treeWriteLock(Path p, Depth depth) throws IOException {
     int outerRetries = 0;
     do {
       int innerRetries = 0;
       do {
         // If there's already a write-lock above or below us in the tree, wait for it to leave
-        if (writeLockAbove(p) || writeLockBelow(p)) {
+        if (writeLockAbove(p) || writeLockBelow(p, depth)) {
           LOG.warn("Blocked on some parent write lock, waiting: {}", p);
           continue;
         }
@@ -239,7 +247,7 @@ public abstract class TreeLockManager {
       // Try obtain the write lock just for our node
       writeLock(p);
       // If there's now a write-lock above or below us in the tree, release and retry
-      if (writeLockAbove(p) || writeLockBelow(p)) {
+      if (writeLockAbove(p) || writeLockBelow(p, depth)) {
         LOG.warn("Blocked on some other write lock, retrying: {}", p);
         writeUnlock(p);
         continue;
@@ -250,7 +258,7 @@ public abstract class TreeLockManager {
     // Once we know we're the only write-lock in our path, drain all read-locks below
     int drainReadLocksRetries = 0;
     do {
-      if (readLockBelow(p)) {
+      if (readLockBelow(p, depth)) {
         LOG.warn("Blocked on some child read lock, writing: {}", p);
         continue;
       }
@@ -303,7 +311,9 @@ public abstract class TreeLockManager {
   public AutoLock lockWrite(Path rawPath) throws IOException {
     Path path = norm(rawPath);
     LOG.debug("About to lock for create / write: {}", rawPath);
-    treeWriteLock(path);
+    // Depth should not matter here, as this is only called on files, not
+    // directories.
+    treeWriteLock(path, Depth.RECURSIVE);
     return new AutoLock() {
       public void close() throws IOException {
         LOG.debug("About to unlock after create / write: {}", path);
@@ -323,7 +333,7 @@ public abstract class TreeLockManager {
   public AutoLock lockDelete(Path rawPath) throws IOException {
     Path path = norm(rawPath);
     LOG.debug("About to lock for delete: {}", path);
-    treeWriteLock(path);
+    treeWriteLock(path, Depth.RECURSIVE);
     return new AutoLock() {
       public void close() throws IOException {
         LOG.debug("About to recursively delete locks: {}", path);
@@ -343,10 +353,10 @@ public abstract class TreeLockManager {
    * @param path Root of the listing operation
    * @return AutoCloseable to release this path
    */
-  public AutoLock lockListing(Path rawPath) throws IOException {
+  public AutoLock lockListing(Path rawPath, Depth depth) throws IOException {
     Path path = norm(rawPath);
     LOG.debug("About to lock for listing: {}", path);
-    treeWriteLock(path);
+    treeWriteLock(path, depth);
     return new AutoLock() {
       public void close() throws IOException {
         LOG.debug("About to unlock after listing: {}", path);
@@ -362,11 +372,11 @@ public abstract class TreeLockManager {
    * @param paths
    * @return AutoCloseable that encapsulate all paths
    */
-  public AutoLock lockListings(Path[] rawPaths) throws IOException {
+  public AutoLock lockListings(Path[] rawPaths, Depth depth) throws IOException {
     Path[] paths = norm(rawPaths);
     for (int i = 0; i < paths.length; i++) {
       LOG.debug("About to lock for listings: {}", paths[i]);
-      treeWriteLock(paths[i]);
+      treeWriteLock(paths[i], depth);
     }
     return new AutoLock() {
       public void close() throws IOException {
@@ -406,11 +416,11 @@ public abstract class TreeLockManager {
     Path dst = norm(rawDst);
     LOG.debug("About to lock for rename: from {} to {}", src, dst);
     if (src.compareTo(dst) < 0) {
-      treeWriteLock(src);
-      treeWriteLock(dst);
+      treeWriteLock(src, Depth.RECURSIVE);
+      treeWriteLock(dst, Depth.RECURSIVE);
     } else {
-      treeWriteLock(dst);
-      treeWriteLock(src);
+      treeWriteLock(dst, Depth.RECURSIVE);
+      treeWriteLock(src, Depth.RECURSIVE);
     }
     return new AutoLock() {
       public void close() throws IOException {

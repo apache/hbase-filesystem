@@ -53,6 +53,7 @@ import org.apache.hadoop.hbase.oss.sync.AutoLock;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedFSDataOutputStream;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
+import org.apache.hadoop.hbase.oss.sync.TreeLockManager.Depth;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
@@ -533,7 +534,7 @@ public class HBaseObjectStoreSemantics extends FileSystem {
 
   public FileStatus[] listStatus(Path f) throws FileNotFoundException,
         IOException {
-    try (AutoLock l = sync.lockListing(f)) {
+    try (AutoLock l = sync.lockListing(f, Depth.DIRECTORY)) {
       return fs.listStatus(f);
     }
   }
@@ -547,21 +548,21 @@ public class HBaseObjectStoreSemantics extends FileSystem {
 
   public FileStatus[] listStatus(Path f, PathFilter filter)
         throws FileNotFoundException, IOException {
-    try (AutoLock l = sync.lockListing(f)) {
+    try (AutoLock l = sync.lockListing(f, Depth.DIRECTORY)) {
       return fs.listStatus(f, filter);
     }
   }
 
   public FileStatus[] listStatus(Path[] files)
         throws FileNotFoundException, IOException {
-    try (AutoLock l = sync.lockListings(files)) {
+    try (AutoLock l = sync.lockListings(files, Depth.DIRECTORY)) {
       return fs.listStatus(files);
     }
   }
 
   public FileStatus[] listStatus(Path[] files, PathFilter filter)
         throws FileNotFoundException, IOException {
-    try (AutoLock l = sync.lockListings(files)) {
+    try (AutoLock l = sync.lockListings(files, Depth.DIRECTORY)) {
       return fs.listStatus(files, filter);
     }
   }
@@ -579,7 +580,7 @@ public class HBaseObjectStoreSemantics extends FileSystem {
 
   public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
         throws FileNotFoundException, IOException {
-    AutoLock lock = sync.lockListing(f);
+    AutoLock lock = sync.lockListing(f, Depth.DIRECTORY);
     try {
       RemoteIterator<LocatedFileStatus> iterator = fs.listLocatedStatus(f);
       return new LockedRemoteIterator<LocatedFileStatus>(iterator, lock);
@@ -591,7 +592,7 @@ public class HBaseObjectStoreSemantics extends FileSystem {
 
   public RemoteIterator<FileStatus> listStatusIterator(final Path p)
         throws FileNotFoundException, IOException {
-    AutoLock lock = sync.lockListing(p);
+    AutoLock lock = sync.lockListing(p, Depth.DIRECTORY);
     try {
       RemoteIterator<FileStatus> iterator = fs.listStatusIterator(p);
       return new LockedRemoteIterator<FileStatus>(iterator, lock);
@@ -604,7 +605,8 @@ public class HBaseObjectStoreSemantics extends FileSystem {
   public RemoteIterator<LocatedFileStatus> listFiles(
         final Path f, final boolean recursive)
         throws FileNotFoundException, IOException {
-    AutoLock lock = sync.lockListing(f);
+    Depth depth = recursive ? Depth.RECURSIVE : Depth.DIRECTORY;
+    AutoLock lock = sync.lockListing(f, depth);
     try {
       RemoteIterator<LocatedFileStatus> iterator = fs.listFiles(f, recursive);
       return new LockedRemoteIterator<LocatedFileStatus>(iterator, lock);
@@ -847,7 +849,7 @@ public class HBaseObjectStoreSemantics extends FileSystem {
 
   public Path createSnapshot(Path path, String snapshotName)
         throws IOException {
-    try (AutoLock l = sync.lockListing(path)) {
+    try (AutoLock l = sync.lockListing(path, Depth.RECURSIVE)) {
       return fs.createSnapshot(path, snapshotName);
     }
   }

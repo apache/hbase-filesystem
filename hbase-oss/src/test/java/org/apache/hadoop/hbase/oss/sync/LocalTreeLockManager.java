@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,15 +102,19 @@ public class LocalTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  protected boolean writeLockBelow(Path p) throws IOException {
+  @VisibleForTesting
+  public boolean writeLockBelow(Path p, Depth depth) throws IOException {
     createLocksIfNeeded(p);
-    return writeLockBelow(p, true);
+    int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
+    return writeLockBelow(p, 0, maxLevel);
   }
 
   @Override
-  protected boolean readLockBelow(Path p) throws IOException {
+  @VisibleForTesting
+  public boolean readLockBelow(Path p, Depth depth) throws IOException {
     createLocksIfNeeded(p);
-    return readLockBelow(p, true);
+    int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
+    return readLockBelow(p, 0, maxLevel);
   }
 
   @Override
@@ -167,33 +172,37 @@ public class LocalTreeLockManager extends TreeLockManager {
     }
   }
 
-  private synchronized boolean writeLockBelow(Path p, boolean firstLevel) {
+  private synchronized boolean writeLockBelow(Path p, int level, int maxLevel) {
     LockNode currentNode = index.get(p);
-    if (!firstLevel && currentNode.lock.isWriteLocked() &&
+    if (level > 0 && currentNode.lock.isWriteLocked() &&
           !currentNode.lock.isWriteLockedByCurrentThread()) {
       LOG.warn("Child write lock current held: {}", p);
       return true;
     }
-    Set<Path> childPaths = currentNode.children.keySet();
-    for (Path child : childPaths) {
-      if (writeLockBelow(child, false)) {
-        return true;
+    if (level <= maxLevel) {
+      Set<Path> childPaths = currentNode.children.keySet();
+      for (Path child : childPaths) {
+        if (writeLockBelow(child, level+1, maxLevel)) {
+          return true;
+        }
       }
     }
     return false;
   }
 
   // TODO will return true even if current thread has a read lock below...
-  private synchronized boolean readLockBelow(Path p, boolean firstLevel) {
+  private synchronized boolean readLockBelow(Path p, int level, int maxLevel) {
     LockNode currentNode = index.get(p);
-    if (!firstLevel && currentNode.lock.getReadLockCount() > 0) {
+    if (level > 0 && currentNode.lock.getReadLockCount() > 0) {
       LOG.warn("Child read lock currently held: {}", p);
       return true;
     }
-    Set<Path> childPaths = index.get(p).children.keySet();
-    for (Path child : childPaths) {
-      if (readLockBelow(child, false)) {
-        return true;
+    if (level <= maxLevel) {
+      Set<Path> childPaths = index.get(p).children.keySet();
+      for (Path child : childPaths) {
+        if (readLockBelow(child, level+1, maxLevel)) {
+          return true;
+        }
       }
     }
     return false;

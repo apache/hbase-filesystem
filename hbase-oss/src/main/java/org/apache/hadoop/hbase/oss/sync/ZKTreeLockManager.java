@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseInterfaceAudience;
 import org.apache.hadoop.hbase.oss.Constants;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.apache.zookeeper.KeeperException;
@@ -167,14 +168,18 @@ public class ZKTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  protected boolean writeLockBelow(Path p) throws IOException {
-    boolean b = writeLockBelow(p, true);
+  @VisibleForTesting
+  public boolean writeLockBelow(Path p, Depth depth) throws IOException {
+    int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
+    boolean b = writeLockBelow(p, 0, maxLevel);
     return b;
   }
 
   @Override
-  protected boolean readLockBelow(Path p) throws IOException {
-    boolean b = readLockBelow(p, true);
+  @VisibleForTesting
+  public boolean readLockBelow(Path p, Depth depth) throws IOException {
+    int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
+    boolean b = readLockBelow(p, 0, maxLevel);
     return b;
   }
 
@@ -214,19 +219,21 @@ public class ZKTreeLockManager extends TreeLockManager {
     return 0 == other.toString().indexOf(parent.toString());
   }
 
-  private boolean writeLockBelow(Path p, boolean firstLevel) throws IOException {
+  private boolean writeLockBelow(Path p, int level, int maxLevel) throws IOException {
     try {
-      if (!firstLevel && isLocked(get(p).writeLock())) {
+      if (level > 0 && isLocked(get(p).writeLock())) {
         return true;
       }
-      List<String> children = curator.getChildren().forPath(p.toString());
-      for (String child : children) {
-        if (child.equals(lockSubZnode)) {
-          continue;
-        }
-        if (writeLockBelow(new Path(p, child), false)) {
-          LOG.warn("Parent write lock currently held: {}", p);
-          return true;
+      if (level < maxLevel) {
+        List<String> children = curator.getChildren().forPath(p.toString());
+        for (String child : children) {
+          if (child.equals(lockSubZnode)) {
+            continue;
+          }
+          if (writeLockBelow(new Path(p, child), level+1, maxLevel)) {
+            LOG.warn("Parent write lock currently held: {}", p);
+            return true;
+          }
         }
       }
     } catch (KeeperException.NoNodeException e) {
@@ -237,19 +244,21 @@ public class ZKTreeLockManager extends TreeLockManager {
     return false;
   }
 
-  private boolean readLockBelow(Path p, boolean firstLevel) throws IOException {
+  private boolean readLockBelow(Path p, int level, int maxLevel) throws IOException {
     try {
-      if (!firstLevel && isLocked(get(p).readLock())) {
+      if (level > 0 && isLocked(get(p).readLock())) {
         return true;
       }
-      List<String> children = curator.getChildren().forPath(p.toString());
-      for (String child : children) {
-        if (child.equals(lockSubZnode)) {
-          continue;
-        }
-        if (readLockBelow(new Path(p, child), false)) {
-          LOG.warn("Child read lock currently held: {}", p);
-          return true;
+      if (level < maxLevel) {
+        List<String> children = curator.getChildren().forPath(p.toString());
+        for (String child : children) {
+          if (child.equals(lockSubZnode)) {
+            continue;
+          }
+          if (readLockBelow(new Path(p, child), level+1, maxLevel)) {
+            LOG.warn("Child read lock currently held: {}", p);
+            return true;
+          }
         }
       }
     } catch (KeeperException.NoNodeException e) {
