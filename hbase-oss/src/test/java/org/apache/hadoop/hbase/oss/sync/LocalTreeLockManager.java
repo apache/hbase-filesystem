@@ -179,7 +179,7 @@ public class LocalTreeLockManager extends TreeLockManager {
       LOG.warn("Child write lock current held: {}", p);
       return true;
     }
-    if (level <= maxLevel) {
+    if (level < maxLevel) {
       Set<Path> childPaths = currentNode.children.keySet();
       for (Path child : childPaths) {
         if (writeLockBelow(child, level+1, maxLevel)) {
@@ -197,7 +197,7 @@ public class LocalTreeLockManager extends TreeLockManager {
       LOG.warn("Child read lock currently held: {}", p);
       return true;
     }
-    if (level <= maxLevel) {
+    if (level < maxLevel) {
       Set<Path> childPaths = index.get(p).children.keySet();
       for (Path child : childPaths) {
         if (readLockBelow(child, level+1, maxLevel)) {

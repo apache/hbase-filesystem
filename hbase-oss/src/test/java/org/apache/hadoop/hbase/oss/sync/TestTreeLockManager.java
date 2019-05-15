@@ -22,10 +22,12 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
+import org.apache.hadoop.hbase.oss.sync.NullTreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager.Depth;
 import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ public class TestTreeLockManager extends HBaseObjectStoreSemanticsTest {
 
   @Test
   public void testLockBelowChecks() throws Exception {
+    Assume.assumeFalse(sync instanceof NullTreeLockManager);
+
     Path parent = testPath("testListingLevels");
     Path child = new Path(parent, "child");
     Path deepWrite = new Path(child, "w");
