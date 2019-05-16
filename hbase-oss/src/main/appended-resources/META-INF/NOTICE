@@ -1,0 +1,47 @@
+----
+This work bundles parts of the Netty Project licensed under the Apache License v2.0.
+
+Relevant copy of details from its NOTICE file, including works bundled as a result of including it.
+Please see LICENSE for details of anything licensed under something other than Apache License v2.0.
+
+Please visit the Netty web site for more information:
+
+  * http://netty.io/
+
+Copyright 2011 The Netty Project
+
+This product contains the extensions to Java Collections Framework which has
+been derived from the works by JSR-166 EG, Doug Lea, and Jason T. Greene available
+under Public Domain.
+
+  * HOMEPAGE:
+    * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/
+    * http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbosscache/experimental/jsr166/
+
+This product contains a modified version of Robert Harder's Public Domain
+Base64 Encoder and Decoder, which can be obtained at:
+
+  * HOMEPAGE:
+    * http://iharder.sourceforge.net/current/java/base64/
+
+This product contains a modified version of 'JZlib', a re-implementation of
+zlib in pure Java under a BSD style license, which can be obtained at:
+
+  * HOMEPAGE:
+    * http://www.jcraft.com/jzlib/
+
+This product contains a modified version of 'Webbit', a Java event based
+WebSocket and HTTP server, under a BSD license.
+
+  * HOMEPAGE:
+    * https://github.com/joewalnes/webbit
+
+----
+This work bundles additional works licensed under the Apache License v2.0.
+
+Copies of relevant NOTICE files follow:
+
+Apache ZooKeeper
+Copyright 2009-2017 The Apache Software Foundation
+
+
