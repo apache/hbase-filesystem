@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import java.lang.reflect.Method;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystemContractBaseTest;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.HBaseObjectStoreSemantics;
 import org.apache.hadoop.hbase.oss.TestUtils;
-import org.junit.Assume;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,7 +66,11 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
   @Test
   public void testMkdirsWithUmask() throws Exception {
     // Skipped in the hadoop-aws tests
-    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
+    if (TestUtils.fsIs(TestUtils.S3A, conf)) {
+      // It would be nice to use Assume.assumeFalse instead of if, but Hadoop 2
+      // builds pull in JUnit 3, and this is the only way to skip the test.
+      return;
+    }
     super.testMkdirsWithUmask();
   }
 
@@ -100,7 +105,25 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
   @Test
   public void testMoveDirUnderParent() throws Throwable {
     // Skipped in the hadoop-aws tests
-    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
-    super.testMoveDirUnderParent();
+    if (TestUtils.fsIs(TestUtils.S3A, conf)) {
+      // It would be nice to use Assume.assumeFalse instead of if, but Hadoop 2
+      // builds pull in JUnit 3, and this is the only way to skip the test.
+      return;
+    }
+
+    // Can't just call super.testMoveDirUnderParent() because it doesn't
+    // exist in older Hadoop versions
+    String methodName = "testMoveDirUnderParent";
+    Method method = null;
+    boolean skip = false;
+    try {
+      method = super.getClass().getMethod(methodName, (Class<?>[]) null);
+    } catch (NoSuchMethodException e) {
+      skip = true;
+    }
+    Assume.assumeFalse("Unable to find method " + methodName, skip);
+    if (!skip) {
+      method.invoke(this, (Object[]) null);
+    }
   }
 }

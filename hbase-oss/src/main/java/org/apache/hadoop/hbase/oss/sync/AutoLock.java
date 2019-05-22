@@ -131,10 +131,19 @@ public interface AutoLock extends AutoCloseable {
      * Returns the position in the wrapped stream. This should not be accessed
      * after the stream has been closed. Unlike most other functions in this
      * class, this is not enforced because this function shouldn't throw
-     * IOExceptions.
+     * IOExceptions in Hadoop 3
+     *
+     * FSDataOutputStream.getPos() declares that it can throw IOExceptions in Hadoop
+     * 2, but the implementation never does. So it could, in theory, but no
+     * situation in which it actually would is know.
      */
     public long getPos() {
-      return stream.getPos();
+      try {
+        return stream.getPos();
+      } catch (Exception e) {
+        // We can't specify IOException and still compile against Hadoop 3
+        throw new RuntimeException(e);
+      }
     }
 
     @Override

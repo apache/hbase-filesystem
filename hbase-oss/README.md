@@ -76,12 +76,20 @@ use and as such there's a dependency on DynamoDB anyway.
 ## Storage Implementations
 
 Currently HBOSS is primarily designed for and exclusively tested with Hadoop's
-s3a client against Amazon S3. S3Guard must be enabled. Both this requirement and
-the use of an external data store for locking have serious implications if any
-other client accesses the same data.
+s3a client against Amazon S3. *S3Guard must be enabled, which is available in
+Hadoop 2.9.0, 3.0.0, and higher*.
+
+Both the use of S3Guard and Zookeeper for locking (i.e. Zookeeper) have
+implications for other clients that are not configured to share the same
+metadata store and Zookeeper ensemble. Ideally, all clients should be have the
+same configuration in these respects. Read-only clients may not share these
+resources with the HBase processes, but they will not have the added safety
+provided by these features. Clients that do not share these resources and modify
+data can compromise the correctness of HBase.
+
 
 In theory, HBOSS could also work well with Google's cloud storage client (gs)
-or other object storage clients.
+or other object storage clients, but this has not been tested.
 
 ## FileSystem Instantiation
 
@@ -121,3 +129,15 @@ other storage in src/test/resources/core-site.xml.
 
 Any required credentials or other individal configuration should be set in
 src/test/resources/auth-keys.xml, which should be ignored by source control.
+
+### Hadoop Versions
+
+There are Maven profiles defined for Hadoop 2 and Hadoop 3 major versions.
+These are activated via the property `hadoop.profile`. These profiles choose
+a specific Hadoop release in that major line, defaulting to versions as defined
+in `hadoop2.version` and `hadoop3.version`. By default, Hadoop 3 is used by
+the build.
+
+    mvn verify                    # Defaults to Hadoop 3
+    mvn verify -Dhadoop.profile=3 # Activate Hadoop 3
+    mvn verify -Dhadoop.profile=2 # Activate Hadoop 2

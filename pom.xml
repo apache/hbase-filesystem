@@ -39,7 +39,8 @@
     <commons-io.version>2.5</commons-io.version>
     <commons-lang3.version>3.6</commons-lang3.version>
     <curator.version>4.0.0</curator.version>
-    <hadoop.version>3.2.0</hadoop.version>
+    <hadoop2.version>2.9.2</hadoop2.version>
+    <hadoop3.version>3.2.0</hadoop3.version>
     <hbase.version>2.1.4</hbase.version>
     <hbase-thirdparty.version>2.2.0</hbase-thirdparty.version>
     <junit.version>4.12</junit.version>
@@ -68,4 +69,51 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <profiles>
+    <profile>
+      <id>hadoop2</id>
+      <activation>
+        <property>
+          <name>hadoop.profile</name>
+          <value>2</value>
+        </property>
+      </activation>
+      <properties>
+        <hadoop.version>${hadoop2.version}</hadoop.version>
+      </properties>
+      <dependencies>
+        <!-- TestHBOSSContractDistCp hard-codes some HDFS classes in Hadoop 2 -->
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hadoop3</id>
+      <activation>
+        <property>
+          <name>hadoop.profile</name>
+          <value>3</value>
+        </property>
+      </activation>
+      <properties>
+        <hadoop.version>${hadoop3.version}</hadoop.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>hadoop-default</id>
+      <activation>
+        <property>
+          <name>!hadoop.profile</name>
+        </property>
+      </activation>
+      <properties>
+        <hadoop.version>${hadoop3.version}</hadoop.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>
