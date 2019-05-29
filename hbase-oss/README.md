@@ -130,7 +130,10 @@ other storage in src/test/resources/core-site.xml.
 Any required credentials or other individal configuration should be set in
 src/test/resources/auth-keys.xml, which should be ignored by source control.
 
-### Hadoop Versions
+## Hadoop Versions
+
+HBoss mainly depends on *org.apache.hadoop.fs.FileSystem* contract, and
+current HBoss version is compatible with Hadoop releases *2.9.2* and *3.2.0*.
 
 There are Maven profiles defined for Hadoop 2 and Hadoop 3 major versions.
 These are activated via the property `hadoop.profile`. These profiles choose
