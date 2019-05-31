@@ -175,7 +175,7 @@ public class ZKTreeLockManager extends TreeLockManager {
     while (!p.isRoot()) {
       p = p.getParent();
       if (isLocked(get(p).writeLock())) {
-        LOG.warn("Parent write lock currently held: {}", p);
+        LOG.debug("Parent write lock currently held: {}", p);
         return true;
       }
     }
@@ -246,7 +246,7 @@ public class ZKTreeLockManager extends TreeLockManager {
             continue;
           }
           if (writeLockBelow(new Path(p, child), level+1, maxLevel)) {
-            LOG.warn("Parent write lock currently held: {}", p);
+            LOG.debug("Parent write lock currently held: {}", p);
             return true;
           }
         }
@@ -271,7 +271,7 @@ public class ZKTreeLockManager extends TreeLockManager {
             continue;
           }
           if (readLockBelow(new Path(p, child), level+1, maxLevel)) {
-            LOG.warn("Child read lock currently held: {}", p);
+            LOG.debug("Child read lock currently held: {}", p);
             return true;
           }
         }
