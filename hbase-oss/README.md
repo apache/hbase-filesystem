@@ -43,10 +43,6 @@ below:
 The null implementation just provides no-op methods instead of actual locking
 operations. This functions as an easy way to verify that a test case has
 successfully reproduced a problem that is hidden by the other implementations.
-Notice this implementation should consistently fail tests enforcing atomicity,
-such as TestAtomicRename and TestCreateNonRecursive. Additional tests may
-eventually fail due to unpredictable race conditions, since no lock behaviour
-is being implemented.
 
 ### Local Implementation (org.apache.hadoop.hbase.oss.sync.LocalTreeLockManager)
 
