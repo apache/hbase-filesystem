@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hbase.oss;
+package org.apache.hadoop.hbase.oss.sync;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.hadoop.hbase.oss.HBaseObjectStoreSemanticsTest;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
 import org.apache.hadoop.hbase.oss.sync.NullTreeLockManager;
-import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager.Depth;
 import org.apache.hadoop.fs.Path;
 import org.junit.Assert;

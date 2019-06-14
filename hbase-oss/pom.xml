@@ -290,6 +290,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-distcp</artifactId>
       <version>${hadoop.version}</version>
       <type>test-jar</type>
@@ -311,6 +318,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
       <version>${hadoop.version}</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -356,20 +364,6 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-zookeeper</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-zookeeper</artifactId>
-      <version>${hbase.version}</version>
-      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
 
