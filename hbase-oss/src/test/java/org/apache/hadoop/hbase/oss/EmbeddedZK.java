@@ -21,7 +21,6 @@ package org.apache.hadoop.hbase.oss;
 import java.net.InetAddress;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseZKTestingUtility;
 import org.apache.hadoop.hbase.oss.Constants;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.ZKTreeLockManager;
@@ -32,17 +31,24 @@ import org.apache.yetus.audience.InterfaceStability;
 @InterfaceStability.Unstable
 public class EmbeddedZK {
 
-  private static HBaseZKTestingUtility util = null;
+  private static Object testUtil = null;
 
   public static synchronized void conditionalStart(Configuration conf) throws Exception {
-    Class implementation = conf.getClass(Constants.SYNC_IMPL, TreeLockManager.class);
+    Class<?> implementation = conf.getClass(Constants.SYNC_IMPL, TreeLockManager.class);
     boolean notConfigured = StringUtils.isEmpty(conf.get(Constants.ZK_CONN_STRING));
     if (implementation == ZKTreeLockManager.class && notConfigured) {
-      if (util == null) {
-        util = new HBaseZKTestingUtility(conf);
-        util.startMiniZKCluster();
+      if (testUtil == null) {
+        Class<?> testUtilImpl;
+        try {
+          testUtilImpl = Class.forName("org.apache.hadoop.hbase.HBaseZKTestingUtility");
+        } catch (ClassNotFoundException ex) {
+          testUtilImpl = Class.forName("org.apache.hadoop.hbase.HBaseTestingUtility");
+        }
+        testUtil = testUtilImpl.getDeclaredConstructor(Configuration.class).newInstance(conf);
+        testUtil.getClass().getDeclaredMethod("startMiniZKCluster").invoke(testUtil);
       }
-      int port = util.getZkCluster().getClientPort();
+      Object zkCluster = testUtil.getClass().getDeclaredMethod("getZkCluster").invoke(testUtil);
+      int port = (int) zkCluster.getClass().getDeclaredMethod("getClientPort").invoke(zkCluster);
       String hostname = InetAddress.getLocalHost().getHostName();
       String connectionString = hostname + ":" + port;
       conf.set(Constants.ZK_CONN_STRING, connectionString);
@@ -50,9 +56,9 @@ public class EmbeddedZK {
   }
 
   public static synchronized void conditionalStop() throws Exception {
-    if (util != null) {
-      util.shutdownMiniZKCluster();
-      util = null;
+    if (testUtil != null) {
+      testUtil.getClass().getDeclaredMethod("shutdownMiniZKCluster").invoke(testUtil);
+      testUtil = null;
     }
   }
 }

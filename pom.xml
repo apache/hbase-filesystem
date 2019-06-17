@@ -52,7 +52,9 @@
     <guava.version>23.0</guava.version>
     <hadoop2.version>2.9.2</hadoop2.version>
     <hadoop3.version>3.2.0</hadoop3.version>
-    <hbase.version>2.1.4</hbase.version>
+    <hbase1.version>1.4.10</hbase1.version>
+    <hbase2.version>2.1.4</hbase2.version>
+    <hbase-thirdparty.version>2.2.1</hbase-thirdparty.version>
     <junit.version>4.12</junit.version>
     <log4j.version>1.2.17</log4j.version>
     <slf4j.version>1.7.25</slf4j.version>
@@ -93,15 +95,6 @@
       <properties>
         <hadoop.version>${hadoop2.version}</hadoop.version>
       </properties>
-      <dependencies>
-        <!-- TestHBOSSContractDistCp hard-codes some HDFS classes in Hadoop 2 -->
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>hadoop3</id>
@@ -126,5 +119,106 @@
         <hadoop.version>${hadoop3.version}</hadoop.version>
       </properties>
     </profile>
+    <profile>
+      <id>hbase-default</id>
+      <activation>
+        <property>
+          <name>!hbase.profile</name>
+        </property>
+      </activation>
+      <properties>
+        <hbase.version>${hbase2.version}</hbase.version>
+      </properties>
+      <!-- For testing against ZK -->
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-zookeeper</artifactId>
+          <version>${hbase2.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-zookeeper</artifactId>
+          <version>${hbase2.version}</version>
+          <type>test-jar</type>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hbase2</id>
+      <activation>
+        <property>
+          <name>hbase.profile</name>
+          <value>2</value>
+        </property>
+      </activation>
+      <properties>
+        <hbase.version>${hbase2.version}</hbase.version>
+      </properties>
+      <!-- For testing against ZK -->
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-zookeeper</artifactId>
+          <version>${hbase2.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-zookeeper</artifactId>
+          <version>${hbase2.version}</version>
+          <type>test-jar</type>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hbase1</id>
+      <activation>
+        <property>
+          <name>hbase.profile</name>
+          <value>1</value>
+        </property>
+      </activation>
+      <properties>
+        <hbase.version>${hbase1.version}</hbase.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase.thirdparty</groupId>
+          <artifactId>hbase-shaded-miscellaneous</artifactId>
+          <version>${hbase-thirdparty.version}</version>
+        </dependency>
+        <!-- For testing against ZK -->
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-testing-util</artifactId>
+          <version>${hbase1.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-testing-util</artifactId>
+          <version>${hbase1.version}</version>
+          <type>test-jar</type>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-minikdc</artifactId>
+          <version>${hadoop.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.directory.jdbm</groupId>
+              <artifactId>apacheds-jdbm1</artifactId>
+            </exclusion>
+          </exclusions>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
+
 </project>
