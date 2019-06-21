@@ -134,7 +134,9 @@ other storage in src/test/resources/core-site.xml.
 Any required credentials or other individal configuration should be set in
 src/test/resources/auth-keys.xml, which should be ignored by source control.
 
-## Hadoop Versions
+## Dependency Versions
+
+### Hadoop Versions
 
 HBoss mainly depends on *org.apache.hadoop.fs.FileSystem* contract, and
 current HBoss version is compatible with Hadoop releases *2.9.2* and *3.2.0*.
@@ -145,6 +147,18 @@ a specific Hadoop release in that major line, defaulting to versions as defined
 in `hadoop2.version` and `hadoop3.version`. By default, Hadoop 3 is used by
 the build.
 
-    mvn verify                    # Defaults to Hadoop 3
-    mvn verify -Dhadoop.profile=3 # Activate Hadoop 3
-    mvn verify -Dhadoop.profile=2 # Activate Hadoop 2
+### HBase Versions
+HBoss testing suite relies on HBase Zookeeper testing utility class, which has
+been changing over different HBase releases. Current HBoss version is guaranteed
+to compile with HBase *1.4.10* and *2.1.4*. Default build HBase version chosen
+is *2.1.4*. To compile with HBase *1.4.10*, `hbase.profile` needs to be set to `1`.
+
+### Examples of different build profile usage/combinations, and related dependency versions picked:
+
+    mvn verify                                      # Defaults to Hadoop 3, HBase 2
+    mvn verify -Dhadoop.profile=3                   # Activate Hadoop 3, HBase 2 used as default
+    mvn verify -Dhadoop.profile=2                   # Activate Hadoop 2, HBase 2 used as default
+    mvn verify -Dhbase.profile=1                    # Activate HBase 1, Hadoop 3 used as default
+    mvn verify -Dhadoop.profile=2 -Dhbase.profile=1 # Activate Hadoop 2 and HBase 1
+    mvn verify -Dhadoop.profile=3 -Dhbase.profile=1 # Activate Hadoop 3 and HBase 1
+
