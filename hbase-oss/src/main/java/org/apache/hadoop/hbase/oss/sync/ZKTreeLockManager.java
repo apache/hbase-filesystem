@@ -86,6 +86,10 @@ public class ZKTreeLockManager extends TreeLockManager {
     // paths to constantly be resolved inside the root.
 
     String zookeeperConnectionString = conf.get(Constants.ZK_CONN_STRING);
+    // Fallback to the HBase ZK quorum.
+    if (zookeeperConnectionString == null) {
+      zookeeperConnectionString = conf.get("hbase.zookeeper.quorum");
+    }
     curator = CuratorFrameworkFactory.newClient(zookeeperConnectionString, retryPolicy);
     curator.start();
     waitForCuratorToConnect();
@@ -118,7 +122,9 @@ public class ZKTreeLockManager extends TreeLockManager {
 
   @Override
   public void close() throws IOException {
-    curator.close();
+    if (curator != null) {
+      curator.close();
+    }
   }
 
   @Override

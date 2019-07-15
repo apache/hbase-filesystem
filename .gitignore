@@ -2,3 +2,6 @@ target
 auth-keys.xml
 .idea
 *.iml
+.settings
+.project
+.classpath

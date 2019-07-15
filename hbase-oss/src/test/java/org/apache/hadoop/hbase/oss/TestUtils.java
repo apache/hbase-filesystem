@@ -18,18 +18,15 @@
 
 package org.apache.hadoop.hbase.oss;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.oss.sync.EmbeddedZK;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
-import org.junit.After;
 import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +38,8 @@ public class TestUtils {
 
   // This is defined by the Maven Surefire plugin configuration
   private static final String TEST_UNIQUE_FORK_ID = "test.unique.fork.id";
+
+  private static EmbeddedZK zk = null;
 
   public static final String S3A = "s3a";
 
@@ -87,7 +86,12 @@ public class TestUtils {
     }
 
     EmbeddedS3.conditionalStart(conf);
-    EmbeddedZK.conditionalStart(conf);
+    synchronized (TestUtils.class) {
+      if (zk == null) {
+        zk = new EmbeddedZK();
+      }
+    }
+    zk.conditionalStart(conf);
 
     try {
       String dataURI = conf.get(Constants.DATA_URI);
@@ -107,6 +111,10 @@ public class TestUtils {
     if (hboss != null) {
       hboss.close();
     }
-    EmbeddedZK.conditionalStop();
+    synchronized (TestUtils.class) {
+      if (zk != null) {
+        zk.conditionalStop();
+      }
+    }
   }
 }
