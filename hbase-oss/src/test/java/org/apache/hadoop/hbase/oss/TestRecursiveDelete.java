@@ -70,7 +70,9 @@ public class TestRecursiveDelete extends HBaseObjectStoreSemanticsTest {
       });
       Assert.assertNull(fut.get(15, TimeUnit.SECONDS));
     } finally {
+      long start = System.currentTimeMillis();
       hboss.delete(tmp, true);
+      LOG.debug(">> time elapsed: " + (System.currentTimeMillis()-start));
     }
   }
 
