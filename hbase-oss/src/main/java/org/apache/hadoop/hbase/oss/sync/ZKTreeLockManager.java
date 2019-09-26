@@ -305,16 +305,12 @@ public class ZKTreeLockManager extends TreeLockManager {
         // than checking other processes.
         return true;
       }
-      // Finally, see if another process holds the lock. This is a terrible way
-      // to check but Curator doesn't expose another way.
-      if (lock.acquire(0, TimeUnit.NANOSECONDS)) {
-        lock.release();
-        return false;
-      }
+      return !lock.getParticipantNodes().isEmpty();
+    } catch (KeeperException.NoNodeException e){
+      return false;
     } catch (Exception e) {
       throw new IOException("Exception while testing a lock", e);
     }
-    return true;
   }
 
   public String summarizeLocks() {
