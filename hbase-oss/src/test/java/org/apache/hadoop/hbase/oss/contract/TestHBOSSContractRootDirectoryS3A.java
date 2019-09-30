@@ -18,16 +18,14 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
-import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractRootDirectoryTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.TestUtils;
 import org.junit.Assume;
+import org.junit.Ignore;
 
-public class TestHBOSSContractRootDirectory extends AbstractContractRootDirectoryTest {
+public class TestHBOSSContractRootDirectoryS3A extends AbstractContractRootDirectoryTest {
 
   @Override
   protected Configuration createConfiguration() {
@@ -43,7 +41,13 @@ public class TestHBOSSContractRootDirectory extends AbstractContractRootDirector
       e.printStackTrace();
       fail("Exception configuring FS: " + e);
     }
-    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
+    Assume.assumeTrue(TestUtils.fsIs(TestUtils.S3A, conf));
     return contract;
+  }
+
+  //HADOOP-16380 introduced changes on S3AFileSystem for delete not throw any exception
+  @Override
+  @Ignore("S3 always return false when non-recursively remove root dir")
+  public void testRmNonEmptyRootDirNonRecursive() throws Throwable {
   }
 }

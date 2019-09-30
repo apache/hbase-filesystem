@@ -21,6 +21,8 @@ package org.apache.hadoop.hbase.oss.contract;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
+import org.apache.hadoop.hbase.oss.TestUtils;
+import org.junit.Assume;
 
 public class TestHBOSSContractOpen extends AbstractContractOpenTest {
 
@@ -31,6 +33,14 @@ public class TestHBOSSContractOpen extends AbstractContractOpenTest {
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
-    return new HBOSSContract(conf);
+    HBOSSContract contract = new HBOSSContract(conf);
+    try {
+      TestUtils.getFileSystem(conf);
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception configuring FS: " + e);
+    }
+    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
+    return contract;
   }
 }

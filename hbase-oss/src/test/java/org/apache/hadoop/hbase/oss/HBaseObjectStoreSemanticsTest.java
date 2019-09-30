@@ -52,6 +52,7 @@ public class HBaseObjectStoreSemanticsTest {
   @Before
   public void setup() throws Exception {
     Configuration conf = new Configuration();
+    conf.addResource("contract/s3a.xml");
     hboss = TestUtils.getFileSystem(conf);
     sync = hboss.getLockManager();
     hboss.mkdirs(testPathRoot());

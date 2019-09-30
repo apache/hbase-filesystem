@@ -52,6 +52,7 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
   public void setUp() throws Exception {
     nameThread();
     conf = new Configuration();
+    conf.addResource("contract/s3a.xml");
     fs = TestUtils.getFileSystem(conf);
     Assume.assumeNotNull(fs);
     HBaseObjectStoreSemantics hboss = (HBaseObjectStoreSemantics)fs;

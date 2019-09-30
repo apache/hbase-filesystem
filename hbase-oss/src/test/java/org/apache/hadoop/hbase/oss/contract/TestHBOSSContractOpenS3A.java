@@ -18,16 +18,11 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
-import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.contract.AbstractContractRootDirectoryTest;
+import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.oss.TestUtils;
-import org.junit.Assume;
 
-public class TestHBOSSContractRootDirectory extends AbstractContractRootDirectoryTest {
+public class TestHBOSSContractOpenS3A extends AbstractContractOpenTest {
 
   @Override
   protected Configuration createConfiguration() {
@@ -36,14 +31,14 @@ public class TestHBOSSContractRootDirectory extends AbstractContractRootDirector
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
-    HBOSSContract contract = new HBOSSContract(conf);
-    try {
-      TestUtils.getFileSystem(conf);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception configuring FS: " + e);
-    }
-    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
-    return contract;
+    return new HBOSSContract(conf);
+  }
+
+  /**
+   * S3A always declares zero byte files as encrypted.
+   * @return true, always.
+   */
+  protected boolean areZeroByteFilesEncrypted() {
+    return true;
   }
 }
