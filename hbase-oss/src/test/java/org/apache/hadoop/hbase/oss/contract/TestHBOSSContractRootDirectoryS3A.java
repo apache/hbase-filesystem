@@ -22,9 +22,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractRootDirectoryTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.hbase.oss.TestUtils;
-import org.junit.Assume;
 import org.junit.Ignore;
 
+/**
+ * For S3A-specific extension of AbstractContractRootDirectoryTest, this overrides
+ * testRmNonEmptyRootDirNonRecursive(), marking it as ignored, since
+ * HADOOP-16380 introduced changes on S3AFileSystem for delete not throw any exception.
+ * TestHBOSSContractRootDirectory remains to be run in the general case.
+ */
 public class TestHBOSSContractRootDirectoryS3A extends AbstractContractRootDirectoryTest {
 
   @Override
@@ -35,13 +40,7 @@ public class TestHBOSSContractRootDirectoryS3A extends AbstractContractRootDirec
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
     HBOSSContract contract = new HBOSSContract(conf);
-    try {
-      TestUtils.getFileSystem(conf);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception configuring FS: " + e);
-    }
-    Assume.assumeTrue(TestUtils.fsIs(TestUtils.S3A, conf));
+    TestUtils.runIfS3(true, conf);
     return contract;
   }
 

@@ -21,7 +21,14 @@ package org.apache.hadoop.hbase.oss.contract;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
+import org.apache.hadoop.hbase.oss.TestUtils;
 
+
+/**
+ * For S3A-specific extension of AbstractContractOpenTest, we needed to override
+ * areZeroByteFilesEncrypted() method to always return true.
+ * TestHBOSSContractOpen remains to be run in the general case.
+ */
 public class TestHBOSSContractOpenS3A extends AbstractContractOpenTest {
 
   @Override
@@ -31,7 +38,9 @@ public class TestHBOSSContractOpenS3A extends AbstractContractOpenTest {
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
-    return new HBOSSContract(conf);
+    AbstractFSContract contract = new HBOSSContract(conf);
+    TestUtils.runIfS3(true, conf);
+    return contract;
   }
 
   /**

@@ -102,7 +102,6 @@ public class TestUtils {
       return hboss;
     } catch (Exception e) {
       LOG.error(e.getMessage());
-      e.printStackTrace();
       throw e;
     }
   }
@@ -115,6 +114,19 @@ public class TestUtils {
       if (zk != null) {
         zk.conditionalStop();
       }
+    }
+  }
+
+  public static void runIfS3(boolean isS3, Configuration conf) {
+    try {
+      TestUtils.getFileSystem(conf);
+    } catch (Exception e) {
+      throw new AssertionError(e);
+    }
+    if(isS3) {
+      Assume.assumeTrue(TestUtils.fsIs(TestUtils.S3A, conf));
+    } else {
+      Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
     }
   }
 }

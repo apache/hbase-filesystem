@@ -22,8 +22,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.hbase.oss.TestUtils;
-import org.junit.Assume;
 
+/**
+ * There is an S3A-specific extension of AbstractContractOpenTest
+ * that is similarly extended for HBOSS-on-S3A. This class remains to be run in
+ * the general case.
+ */
 public class TestHBOSSContractOpen extends AbstractContractOpenTest {
 
   @Override
@@ -33,14 +37,8 @@ public class TestHBOSSContractOpen extends AbstractContractOpenTest {
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
-    HBOSSContract contract = new HBOSSContract(conf);
-    try {
-      TestUtils.getFileSystem(conf);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception configuring FS: " + e);
-    }
-    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
+    AbstractFSContract contract = new HBOSSContract(conf);
+    TestUtils.runIfS3(false, conf);
     return contract;
   }
 }

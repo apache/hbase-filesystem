@@ -18,14 +18,10 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
-import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.fs.contract.AbstractContractRenameTest;
-import org.apache.hadoop.hbase.oss.EmbeddedS3;
 import org.apache.hadoop.hbase.oss.TestUtils;
-import org.junit.Assume;
-import org.junit.Test;
 
 /**
  * There is an S3A-specific extension of AbstractContractRenameTest
@@ -42,13 +38,7 @@ public class TestHBOSSContractRename extends AbstractContractRenameTest {
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
     HBOSSContract contract = new HBOSSContract(conf);
-    try {
-      TestUtils.getFileSystem(conf);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception configuring FS: " + e);
-    }
-    Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
+    TestUtils.runIfS3(false, conf);
     return contract;
   }
 }
