@@ -19,16 +19,18 @@
 package org.apache.hadoop.hbase.oss.contract;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.contract.AbstractContractRootDirectoryTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.apache.hadoop.fs.contract.AbstractContractRenameTest;
 import org.apache.hadoop.hbase.oss.TestUtils;
+import org.junit.Ignore;
 
 /**
- * There is an S3A-specific extension of AbstractContractRenameTest
- * that is similarly extended for HBOSS-on-S3A. This class remains to be run in
- * the general case.
+ * For S3A-specific extension of AbstractContractRootDirectoryTest, this overrides
+ * testRmNonEmptyRootDirNonRecursive(), marking it as ignored, since
+ * HADOOP-16380 introduced changes on S3AFileSystem for delete not throw any exception.
+ * TestHBOSSContractRootDirectory remains to be run in the general case.
  */
-public class TestHBOSSContractRename extends AbstractContractRenameTest {
+public class TestHBOSSContractRootDirectoryS3A extends AbstractContractRootDirectoryTest {
 
   @Override
   protected Configuration createConfiguration() {
@@ -38,7 +40,13 @@ public class TestHBOSSContractRename extends AbstractContractRenameTest {
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
     HBOSSContract contract = new HBOSSContract(conf);
-    TestUtils.runIfS3(false, conf);
+    TestUtils.runIfS3(true, conf);
     return contract;
+  }
+
+  //HADOOP-16380 introduced changes on S3AFileSystem for delete not throw any exception
+  @Override
+  @Ignore("S3 always return false when non-recursively remove root dir")
+  public void testRmNonEmptyRootDirNonRecursive() throws Throwable {
   }
 }

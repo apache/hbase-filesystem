@@ -51,7 +51,7 @@
     <curator.version>4.2.0</curator.version>
     <guava.version>23.0</guava.version>
     <hadoop2.version>2.9.2</hadoop2.version>
-    <hadoop3.version>3.2.0</hadoop3.version>
+    <hadoop3.version>3.2.1</hadoop3.version>
     <hbase1.version>1.4.10</hbase1.version>
     <hbase2.version>2.1.4</hbase2.version>
     <hbase-thirdparty.version>2.2.1</hbase-thirdparty.version>

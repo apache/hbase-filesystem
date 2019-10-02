@@ -19,16 +19,17 @@
 package org.apache.hadoop.hbase.oss.contract;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.apache.hadoop.fs.contract.AbstractContractRenameTest;
 import org.apache.hadoop.hbase.oss.TestUtils;
 
+
 /**
- * There is an S3A-specific extension of AbstractContractRenameTest
- * that is similarly extended for HBOSS-on-S3A. This class remains to be run in
- * the general case.
+ * For S3A-specific extension of AbstractContractOpenTest, we needed to override
+ * areZeroByteFilesEncrypted() method to always return true.
+ * TestHBOSSContractOpen remains to be run in the general case.
  */
-public class TestHBOSSContractRename extends AbstractContractRenameTest {
+public class TestHBOSSContractOpenS3A extends AbstractContractOpenTest {
 
   @Override
   protected Configuration createConfiguration() {
@@ -37,8 +38,16 @@ public class TestHBOSSContractRename extends AbstractContractRenameTest {
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
-    HBOSSContract contract = new HBOSSContract(conf);
-    TestUtils.runIfS3(false, conf);
+    AbstractFSContract contract = new HBOSSContract(conf);
+    TestUtils.runIfS3(true, conf);
     return contract;
+  }
+
+  /**
+   * S3A always declares zero byte files as encrypted.
+   * @return true, always.
+   */
+  protected boolean areZeroByteFilesEncrypted() {
+    return true;
   }
 }

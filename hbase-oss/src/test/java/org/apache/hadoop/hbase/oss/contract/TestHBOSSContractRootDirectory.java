@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
-import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractRootDirectoryTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.oss.TestUtils;
 
 public class TestHBOSSContractRootDirectory extends AbstractContractRootDirectoryTest {
 
@@ -34,6 +32,8 @@ public class TestHBOSSContractRootDirectory extends AbstractContractRootDirector
 
   @Override
   protected AbstractFSContract createContract(Configuration conf) {
-    return new HBOSSContract(conf);
+    HBOSSContract contract = new HBOSSContract(conf);
+    TestUtils.runIfS3(false, conf);
+    return contract;
   }
 }
