@@ -101,6 +101,7 @@
                   <include>org.apache.curator:curator-*:jar:*</include>
                   <include>org.apache.yetus:audience-annotations:jar:*</include>
                   <include>org.apache.zookeeper:zookeeper:jar:*</include>
+                  <include>org.apache.zookeeper:zookeeper-jute:jar:*</include>
                   <!-- transitives -->
                   <include>io.netty:netty</include>
                 </includes>
