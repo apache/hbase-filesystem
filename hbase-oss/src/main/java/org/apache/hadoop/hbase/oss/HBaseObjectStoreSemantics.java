@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FilterFileSystem;
 import org.apache.hadoop.fs.FsServerDefaults;
 import org.apache.hadoop.fs.FsStatus;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -93,11 +94,9 @@ import org.slf4j.LoggerFactory;
  */
 @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)
 @InterfaceStability.Unstable
-public class HBaseObjectStoreSemantics extends FileSystem {
+public class HBaseObjectStoreSemantics extends FilterFileSystem {
   private static final Logger LOG =
         LoggerFactory.getLogger(HBaseObjectStoreSemantics.class);
-
-  private FileSystem fs;
 
   private TreeLockManager sync;
 
@@ -131,10 +130,6 @@ public class HBaseObjectStoreSemantics extends FileSystem {
     return fs.getScheme();
   }
 
-  public URI getUri() {
-    return fs.getUri();
-  }
-
   @Override
   public String getCanonicalServiceName() {
     return fs.getCanonicalServiceName();
@@ -143,10 +138,6 @@ public class HBaseObjectStoreSemantics extends FileSystem {
   @Deprecated
   public String getName() {
     return fs.getName();
-  }
-
-  public Path makeQualified(Path path) {
-    return fs.makeQualified(path);
   }
 
   public BlockLocation[] getFileBlockLocations(FileStatus file,
@@ -161,19 +152,6 @@ public class HBaseObjectStoreSemantics extends FileSystem {
     try (AutoLock l = sync.lock(p)) {
       return fs.getFileBlockLocations(p, start, len);
     }
-  }
-
-  @Deprecated
-  public FsServerDefaults getServerDefaults() throws IOException {
-    return fs.getServerDefaults();
-  }
-
-  public FsServerDefaults getServerDefaults(Path p) throws IOException {
-    return fs.getServerDefaults(p);
-  }
-
-  public Path resolvePath(final Path p) throws IOException {
-    return fs.resolvePath(p);
   }
 
   public FSDataInputStream open(Path f, int bufferSize)
@@ -616,18 +594,6 @@ public class HBaseObjectStoreSemantics extends FileSystem {
     }
   }
 
-  public Path getHomeDirectory() {
-    return fs.getHomeDirectory();
-  }
-
-  public void setWorkingDirectory(Path newDir) {
-    fs.setWorkingDirectory(newDir);
-  }
-
-  public Path getWorkingDirectory() {
-    return fs.getWorkingDirectory();
-  }
-
   public boolean mkdirs(Path f) throws IOException {
     // TODO this has implications for the parent dirs too
     try (AutoLock l = sync.lock(f)) {
@@ -731,33 +697,11 @@ public class HBaseObjectStoreSemantics extends FileSystem {
     sync.close();
   }
 
-  public long getUsed() throws IOException {
-    return fs.getUsed();
-  }
-
   @Deprecated
   public long getBlockSize(Path f) throws IOException {
     try (AutoLock l = sync.lock(f)) {
       return fs.getBlockSize(f);
     }
-  }
-
-  @Deprecated
-  public long getDefaultBlockSize() {
-    return fs.getDefaultBlockSize();
-  }
-
-  public long getDefaultBlockSize(Path f) {
-    return fs.getDefaultBlockSize(f);
-  }
-
-  @Deprecated
-  public short getDefaultReplication() {
-    return fs.getDefaultReplication();
-  }
-
-  public short getDefaultReplication(Path path) {
-    return fs.getDefaultReplication(path);
   }
 
   public FileStatus getFileStatus(Path f) throws IOException {
