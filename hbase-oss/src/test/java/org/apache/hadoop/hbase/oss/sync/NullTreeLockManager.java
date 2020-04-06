@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hbase.oss.sync;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 
 /**
  * Bypasses all synchronization to effectively make HBOSS operations no-ops.
