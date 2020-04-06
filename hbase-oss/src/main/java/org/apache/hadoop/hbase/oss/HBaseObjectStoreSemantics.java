@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hbase.oss;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
