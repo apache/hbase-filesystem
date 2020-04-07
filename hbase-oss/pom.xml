@@ -96,7 +96,6 @@
                 -->
               <artifactSet>
                 <includes>
-                  <!--<include>com.google.*:*:jar:*</include>-->
                   <include>org.apache.commons:commons-lang3:jar:*</include>
                   <include>org.apache.curator:curator-*:jar:*</include>
                   <include>org.apache.yetus:audience-annotations:jar:*</include>
@@ -107,10 +106,6 @@
                 </includes>
               </artifactSet>
               <relocations>
-                <!--<relocation>
-                  <pattern>com.google</pattern>
-                  <shadedPattern>${shading.prefix}.com.google</shadedPattern>
-                </relocation>-->
                 <relocation>
                   <pattern>org.apache.commons</pattern>
                   <shadedPattern>${shading.prefix}.org.apache.commons</shadedPattern>
