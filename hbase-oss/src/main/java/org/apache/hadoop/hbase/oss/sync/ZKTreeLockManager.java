@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.framework.recipes.locks.InterProcessReadWriteLock;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -123,7 +124,22 @@ public class ZKTreeLockManager extends TreeLockManager {
   @Override
   public void close() throws IOException {
     if (curator != null) {
-      curator.close();
+      synchronized(this) {
+        curator.close();
+        lockCache.clear();
+        logCaller();
+      }
+    }
+  }
+
+  private void logCaller(){
+    if(LOG.isDebugEnabled()){
+      StringBuilder builder = new StringBuilder();
+      StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+      for(StackTraceElement e : elements) {
+        builder.append(e.getClassName()).append(".").append(e.getMethodName()).append("(").append(e.getLineNumber()).append(")").append("\n");
+      }
+      LOG.debug("logging call with curator {} for instance {} at: {}", curator, this, builder.toString());
     }
   }
 
@@ -180,9 +196,11 @@ public class ZKTreeLockManager extends TreeLockManager {
     LOG.debug("Checking for write lock above {}", p);
     while (!p.isRoot()) {
       p = p.getParent();
-      if (isLocked(get(p).writeLock())) {
-        LOG.debug("Parent write lock currently held: {}", p);
-        return true;
+      synchronized (this) {
+        if (isLocked(get(p).writeLock())) {
+          LOG.debug("Parent write lock currently held: {}", p);
+          return true;
+        }
       }
     }
     return false;
@@ -309,6 +327,7 @@ public class ZKTreeLockManager extends TreeLockManager {
     } catch (KeeperException.NoNodeException e){
       return false;
     } catch (Exception e) {
+      logCaller();
       throw new IOException("Exception while testing a lock", e);
     }
   }
@@ -341,6 +360,11 @@ public class ZKTreeLockManager extends TreeLockManager {
   }
 
   private synchronized InterProcessReadWriteLock get(Path path) throws IOException {
+    if (curator.getState() != CuratorFrameworkState.STARTED) {
+      LOG.warn("Curator instance {} is not in STARTED state. We'll start it again. State was: {}",
+        curator, curator.getState().name());
+      this.initialize(this.fs);
+    }
     if (!lockCache.containsKey(path)) {
       String zkPath = new Path(path, lockSubZnode).toString();
       try {

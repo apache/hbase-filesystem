@@ -694,6 +694,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
     // FS must close first so that FileSystem.processDeleteOnExit() can run
     // while locking is still available.
     fs.close();
+    super.close();
     sync.close();
   }
 
