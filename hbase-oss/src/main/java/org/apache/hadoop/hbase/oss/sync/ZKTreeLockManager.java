@@ -191,17 +191,17 @@ public class ZKTreeLockManager extends TreeLockManager {
     }
   }
 
+  /*
+  We need to protect this block against potential concurrent calls to close()
+   */
   @Override
-  protected boolean writeLockAbove(Path p) throws IOException {
+  protected synchronized boolean writeLockAbove(Path p) throws IOException {
     LOG.debug("Checking for write lock above {}", p);
     while (!p.isRoot()) {
       p = p.getParent();
-      //We need to protect this block against potential concurrent calls to close()
-      synchronized (this) {
-        if (isLocked(get(p).writeLock())) {
-          LOG.debug("Parent write lock currently held: {}", p);
-          return true;
-        }
+      if (isLocked(get(p).writeLock())) {
+        LOG.debug("Parent write lock currently held: {}", p);
+        return true;
       }
     }
     return false;
