@@ -221,6 +221,10 @@ public class EmbeddedS3 {
       return this.bucketName.equals(bucketName);
     }
 
+    public boolean doesBucketExistV2(String bucketName) {
+      return this.doesBucketExist(bucketName);
+    }
+
     public boolean doesObjectExist(String bucketName, String objectName)  {
       LOG.debug("doesObjectExist: {}", objectName);
       return bucket.containsKey(objectName);
