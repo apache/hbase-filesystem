@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -121,9 +120,26 @@ public class ZKTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     if (curator != null) {
-      curator.close();
+      synchronized(this) {
+        curator.close();
+        lockCache.clear();
+        logCaller();
+      }
+    }
+  }
+
+  private void logCaller(){
+    if(LOG.isDebugEnabled()){
+      StringBuilder builder = new StringBuilder();
+      StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+      for(StackTraceElement e : elements) {
+        builder.append(e.getClassName()).append(".").
+          append(e.getMethodName()).append("(").append(e.getLineNumber()).append(")").append("\n");
+      }
+      LOG.debug("logging call with curator {} for instance {} at: {}",
+        curator, this, builder.toString());
     }
   }
 
@@ -175,8 +191,11 @@ public class ZKTreeLockManager extends TreeLockManager {
     }
   }
 
+  /*
+  We need to protect this block against potential concurrent calls to close()
+   */
   @Override
-  protected boolean writeLockAbove(Path p) throws IOException {
+  protected synchronized boolean writeLockAbove(Path p) throws IOException {
     LOG.debug("Checking for write lock above {}", p);
     while (!p.isRoot()) {
       p = p.getParent();
@@ -309,6 +328,7 @@ public class ZKTreeLockManager extends TreeLockManager {
     } catch (KeeperException.NoNodeException e){
       return false;
     } catch (Exception e) {
+      logCaller();
       throw new IOException("Exception while testing a lock", e);
     }
   }
