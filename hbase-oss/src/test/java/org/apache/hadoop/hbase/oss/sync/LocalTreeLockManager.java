@@ -18,14 +18,10 @@
 
 package org.apache.hadoop.hbase.oss.sync;
 
-import java.io.IOException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
@@ -49,13 +45,13 @@ public class LocalTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  protected void writeLock(Path p) throws IOException {
+  protected void writeLock(Path p) {
     createLocksIfNeeded(p);
     index.get(p).lock.writeLock().lock();
   }
 
   @Override
-  protected void writeUnlock(Path p) throws IOException {
+  protected void writeUnlock(Path p) {
     try {
       LockNode node = index.get(p);
       // Node to unlock may already be gone after deletes
@@ -70,13 +66,13 @@ public class LocalTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  protected void readLock(Path p) throws IOException {
+  protected void readLock(Path p) {
     createLocksIfNeeded(p);
     index.get(p).lock.readLock().lock();
   }
 
   @Override
-  protected void readUnlock(Path p) throws IOException {
+  protected void readUnlock(Path p) {
     try {
       index.get(p).lock.readLock().unlock();
     } catch(IllegalMonitorStateException e) {
@@ -87,7 +83,7 @@ public class LocalTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  protected boolean writeLockAbove(Path p) throws IOException {
+  protected boolean writeLockAbove(Path p) {
     createLocksIfNeeded(p);
     while (!p.isRoot()) {
       p = p.getParent();
@@ -103,7 +99,7 @@ public class LocalTreeLockManager extends TreeLockManager {
 
   @Override
   @VisibleForTesting
-  public boolean writeLockBelow(Path p, Depth depth) throws IOException {
+  public boolean writeLockBelow(Path p, Depth depth) {
     createLocksIfNeeded(p);
     int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
     return writeLockBelow(p, 0, maxLevel);
@@ -111,7 +107,7 @@ public class LocalTreeLockManager extends TreeLockManager {
 
   @Override
   @VisibleForTesting
-  public boolean readLockBelow(Path p, Depth depth) throws IOException {
+  public boolean readLockBelow(Path p, Depth depth) {
     createLocksIfNeeded(p);
     int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
     return readLockBelow(p, 0, maxLevel);

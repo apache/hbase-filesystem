@@ -21,7 +21,6 @@ package org.apache.hadoop.hbase.oss;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.s3.AbstractAmazonS3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -74,7 +73,7 @@ public class EmbeddedS3 {
 
   private static final String BUCKET = "embedded";
 
-  public static void conditionalStart(Configuration conf) throws Exception {
+  public static void conditionalStart(Configuration conf) {
     if (StringUtils.isEmpty(conf.get(S3_METADATA_STORE_IMPL))) {
       conf.set(S3_METADATA_STORE_IMPL, LocalMetadataStore.class.getName());
     }
@@ -95,8 +94,12 @@ public class EmbeddedS3 {
    * instance. This is currently a private API in Hadoop, but is the same method
    * used by S3Guard's inconsistency-injection tests. The method signature
    * defined in the interface varies depending on the Hadoop version.
+   *
+   * Due to compatibility purposes for both hadoop 2 and 3 main versions,
+   * we are omitting "@override" annotation from overridden methods.
    */
   public static class EmbeddedS3ClientFactory implements S3ClientFactory {
+
     public AmazonS3 createS3Client(URI name) {
       AmazonS3 s3 = new EmbeddedAmazonS3();
       s3.createBucket(BUCKET);

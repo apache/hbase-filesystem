@@ -25,14 +25,10 @@ import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.junit.After;
 import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class HBaseObjectStoreSemanticsTest {
-  public static final Logger LOG =
-        LoggerFactory.getLogger(HBaseObjectStoreSemanticsTest.class);
 
   protected HBaseObjectStoreSemantics hboss = null;
   protected TreeLockManager sync = null;
@@ -42,10 +38,6 @@ public class HBaseObjectStoreSemanticsTest {
   }
 
   public Path testPath(String path) {
-    return TestUtils.testPath(hboss, path);
-  }
-
-  public Path testPath(Path path) {
     return TestUtils.testPath(hboss, path);
   }
 

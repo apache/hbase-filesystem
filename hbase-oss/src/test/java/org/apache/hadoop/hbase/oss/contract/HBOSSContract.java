@@ -54,7 +54,7 @@ public class HBOSSContract extends AbstractFSContract {
    * Any initialisation logic can go here
    * @throws IOException IO problems
    */
-  public void init() throws IOException {
+  public void init() {
 
   }
 

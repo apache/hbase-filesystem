@@ -29,12 +29,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestCreateNonRecursive extends HBaseObjectStoreSemanticsTest {
-  public static final Logger LOG =
-        LoggerFactory.getLogger(TestCreateNonRecursive.class);
 
   @Test
   public void testCreateNonRecursiveSerial() throws Exception {

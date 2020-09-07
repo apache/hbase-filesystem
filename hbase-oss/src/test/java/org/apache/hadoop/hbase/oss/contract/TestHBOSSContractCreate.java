@@ -24,9 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.contract.AbstractContractCreateTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
-import org.apache.hadoop.hbase.oss.EmbeddedS3;
 import org.apache.hadoop.hbase.oss.TestUtils;
-import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.junit.Assume;
 import org.junit.Test;
 
