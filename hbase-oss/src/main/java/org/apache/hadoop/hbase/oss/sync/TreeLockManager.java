@@ -231,8 +231,8 @@ public abstract class TreeLockManager {
    * or write locks should be held by anyone on any child directory.
    *
    * @param path Path to lock
-   * @param depth Depth.DIRECTORY to look for locks on this path only, or Depth.RECURSIVE to
-   *              go through the whole tree beneath this path.
+   * @param depth {@link Depth#DIRECTORY} to look for locks on this path only,
+   *              or {@link Depth#RECURSIVE} to go through the whole tree beneath this path.
    */
   protected void treeWriteLock(Path path, Depth depth) throws IOException {
     int outerRetries = 0;

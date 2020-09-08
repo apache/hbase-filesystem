@@ -52,7 +52,7 @@ import static java.util.Objects.requireNonNull;
  * HBOSS to re-use an Apache HBase cluster's ZooKeeper ensemble for file
  * system locking.
  *
- * Can be enabled in JUnit tests with -Pzk. If {@link Constants.ZK_CONN_STRING}
+ * Can be enabled in JUnit tests with -Pzk. If {@link org.apache.hadoop.hbase.oss.Constants#ZK_CONN_STRING}
  * isn't specified, an embedded ZooKeeper process will be spun up for tests.
  */
 @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)

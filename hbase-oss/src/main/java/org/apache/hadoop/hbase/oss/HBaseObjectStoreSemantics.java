@@ -84,7 +84,6 @@ import org.slf4j.LoggerFactory;
  *     could be made atomic by getting a write lock on the parent of the first
  *     wildcard.
  *   </li>
- *   </li>
  *   <li>
  *     Symlinking is not supported, but not used by HBase at all and not
  *     supported by mainstream object-stores considered in this design.
