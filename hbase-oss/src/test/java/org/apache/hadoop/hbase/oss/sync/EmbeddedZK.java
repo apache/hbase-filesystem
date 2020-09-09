@@ -80,7 +80,7 @@ public class EmbeddedZK {
 
     Object zkCluster = testUtil.getClass().getDeclaredMethod("getZkCluster").invoke(testUtil);
     int port = (int) zkCluster.getClass().getDeclaredMethod("getClientPort").invoke(zkCluster);
-    String hostname = InetAddress.getLocalHost().getHostName();
+    String hostname = InetAddress.getLoopbackAddress().getHostName();
     connectionString = hostname + ":" + port;
     setConfiguration(conf);
   }
