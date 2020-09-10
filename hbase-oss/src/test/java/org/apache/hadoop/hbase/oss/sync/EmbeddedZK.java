@@ -24,8 +24,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.oss.Constants;
-import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
-import org.apache.hadoop.hbase.oss.sync.ZKTreeLockManager;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 

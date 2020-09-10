@@ -20,7 +20,6 @@ package org.apache.hadoop.hbase.oss.contract;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
-import org.apache.hadoop.hbase.oss.TestUtils;
 import org.apache.hadoop.tools.contract.AbstractContractDistCpTest;
 
 public class TestHBOSSContractDistCp extends AbstractContractDistCpTest {

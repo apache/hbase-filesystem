@@ -47,7 +47,7 @@ public abstract class TreeLockManager {
   private static final Logger LOG =
         LoggerFactory.getLogger(TreeLockManager.class);
 
-  public static enum Depth {
+  public enum Depth {
     DIRECTORY, RECURSIVE
   }
 
@@ -82,6 +82,9 @@ public abstract class TreeLockManager {
    * "filesystem" and a path inside it. Assumes a 1:1 mapping between hostnames
    * and filesystems, and assumes the URI scheme mapping is consistent
    * everywhere.
+   *
+   * @param path the path to be normalized.
+   * @return Path the normalized representation.
    */
   public Path norm(Path path) {
     URI uri = fs.makeQualified(path).toUri();
@@ -130,12 +133,17 @@ public abstract class TreeLockManager {
   /**
    * In addition to any implementation-specific setup, implementations must set
    * this.fs = fs in order for path normalization to work.
+   *
+   * @param fs the FileSystem instance to be initialized.
+   * @throws IOException at any possible IO failure.
    */
   public abstract void initialize(FileSystem fs) throws IOException;
 
   /**
    * Performs any shutdown necessary when a client is exiting. Should be
    * considered best-effort and for planned shut downs.
+   *
+   * @throws IOException at any possible IO failure.
    */
   public void close() throws IOException {
   }
@@ -144,6 +152,7 @@ public abstract class TreeLockManager {
    * Acquires a single exclusive (write) lock.
    *
    * @param p Path to lock
+   * @throws IOException at any possible IO failure.
    */
   protected abstract void writeLock(Path p) throws IOException;
 
@@ -151,6 +160,7 @@ public abstract class TreeLockManager {
    * Releases a single exclusive (write) lock.
    *
    * @param p Path to unlock
+   * @throws IOException at any possible IO failure.
    */
   protected abstract void writeUnlock(Path p) throws IOException;
 
@@ -158,6 +168,7 @@ public abstract class TreeLockManager {
    * Acquires a single non-exclusive (read) lock.
    *
    * @param p Path to lock
+   * @throws IOException at any possible IO failure.
    */
   protected abstract void readLock(Path p) throws IOException;
 
@@ -165,6 +176,7 @@ public abstract class TreeLockManager {
    * Releases a single non-exclusive (read) lock.
    *
    * @param p Path to unlock
+   * @throws IOException at any possible IO failure.
    */
   protected abstract void readUnlock(Path p) throws IOException;
 
@@ -174,6 +186,7 @@ public abstract class TreeLockManager {
    *
    * @param p Path to check
    * @return True if a lock is found, false otherwise
+   * @throws IOException at any possible IO failure.
    */
   protected abstract boolean writeLockAbove(Path p) throws IOException;
 
@@ -181,7 +194,10 @@ public abstract class TreeLockManager {
    * Checks for the presence of a write lock on all children of the path.
    *
    * @param p Path to check
+   * @param depth {@link Depth#DIRECTORY} to look for locks on this path only,
+   *              or {@link Depth#RECURSIVE} to go through the whole tree beneath this path.
    * @return True if a lock is found, false otherwise
+   * @throws IOException at any possible IO failure.
    */
   @VisibleForTesting
   public abstract boolean writeLockBelow(Path p, Depth depth) throws IOException;
@@ -191,7 +207,10 @@ public abstract class TreeLockManager {
    * path.
    *
    * @param p Path to check
+   * @param depth {@link Depth#DIRECTORY} to look for locks on this path only,
+   *              or {@link Depth#RECURSIVE} to go through the whole tree beneath this path.
    * @return True if a lock is found, false otherwise
+   * @throws IOException at any possible IO failure.
    */
   @VisibleForTesting
   public abstract boolean readLockBelow(Path p, Depth depth) throws IOException;
@@ -200,6 +219,7 @@ public abstract class TreeLockManager {
    * Recursively cleans up locks that won't be used again.
    *
    * @param p Parent path of all locks to delete
+   * @throws IOException at any possible IO failure.
    */
   protected abstract void recursiveDelete(Path p) throws IOException;
 
@@ -231,25 +251,28 @@ public abstract class TreeLockManager {
    * or write locks should be held by anyone on any child directory.
    *
    * @param path Path to lock
+   * @param depth {@link Depth#DIRECTORY} to look for locks on this path only,
+   *              or {@link Depth#RECURSIVE} to go through the whole tree beneath this path.
+   * @throws IOException at any possible IO failure.
    */
-  protected void treeWriteLock(Path p, Depth depth) throws IOException {
+  protected void treeWriteLock(Path path, Depth depth) throws IOException {
     int outerRetries = 0;
     do {
       int innerRetries = 0;
       do {
         // If there's already a write-lock above or below us in the tree, wait for it to leave
-        if (writeLockAbove(p) || writeLockBelow(p, depth)) {
-          LOG.warn("Blocked on some parent write lock, waiting: {}", p);
+        if (writeLockAbove(path) || writeLockBelow(path, depth)) {
+          LOG.warn("Blocked on some parent write lock, waiting: {}", path);
           continue;
         }
         break;
       } while (retryBackoff(innerRetries++));
       // Try obtain the write lock just for our node
-      writeLock(p);
+      writeLock(path);
       // If there's now a write-lock above or below us in the tree, release and retry
-      if (writeLockAbove(p) || writeLockBelow(p, depth)) {
-        LOG.warn("Blocked on some other write lock, retrying: {}", p);
-        writeUnlock(p);
+      if (writeLockAbove(path) || writeLockBelow(path, depth)) {
+        LOG.warn("Blocked on some other write lock, retrying: {}", path);
+        writeUnlock(path);
         continue;
       }
       break;
@@ -258,8 +281,8 @@ public abstract class TreeLockManager {
     // Once we know we're the only write-lock in our path, drain all read-locks below
     int drainReadLocksRetries = 0;
     do {
-      if (readLockBelow(p, depth)) {
-        LOG.warn("Blocked on some child read lock, writing: {}", p);
+      if (readLockBelow(path, depth)) {
+        LOG.warn("Blocked on some child read lock, writing: {}", path);
         continue;
       }
       break;
@@ -272,27 +295,28 @@ public abstract class TreeLockManager {
    * no write locks should be held by anyone on any parent directory.
    *
    * @param path Path to lock
+   * @throws IOException at any possible IO failure.
    */
-  protected void treeReadLock(Path p) throws IOException {
+  protected void treeReadLock(Path path) throws IOException {
     int outerRetries = 0;
     do {
       int innerRetries = 0;
       do {
         // If there's a write lock above us, wait
-        if (writeLockAbove(p)) {
+        if (writeLockAbove(path)) {
           LOG.warn("Blocked waiting for some parent write lock, waiting: {}",
-                p);
+                path);
           continue;
         }
         break;
       } while (retryBackoff(innerRetries++));
       // Try obtain the read-lock just for our node
-      readLock(p);
+      readLock(path);
       // If there's a write lock above us, release the lock and try again
-      if (writeLockAbove(p)) {
+      if (writeLockAbove(path)) {
         LOG.warn("Blocked waiting for some parent write lock, retrying: {}",
-              p);
-        readUnlock(p);
+              path);
+        readUnlock(path);
         continue;
       }
       break;
@@ -305,8 +329,9 @@ public abstract class TreeLockManager {
    * atomic because the underlying file may not be created until all data has
    * been written.
    *
-   * @param path Path of the create operation
+   * @param rawPath Path of the create operation
    * @return AutoLock to release this path
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lockWrite(Path rawPath) throws IOException {
     Path path = norm(rawPath);
@@ -327,8 +352,9 @@ public abstract class TreeLockManager {
    * and those of all children. The lock ensures this doesn't interfere with any
    * renames or other listing operations above this path.
    *
-   * @param path Path of the create operation
+   * @param rawPath Path of the create operation
    * @return AutoLock to release this path
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lockDelete(Path rawPath) throws IOException {
     Path path = norm(rawPath);
@@ -350,8 +376,11 @@ public abstract class TreeLockManager {
    * listings. Other listings should only need a read lock on the root and all
    * children, but that is not implemented.
    *
-   * @param path Root of the listing operation
+   * @param rawPath Root of the listing operation
+   * @param depth Depth.DIRECTORY to look for locks on this path only, or Depth.RECURSIVE to
+   *    *              go through the whole tree beneath this path.
    * @return AutoCloseable to release this path
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lockListing(Path rawPath, Depth depth) throws IOException {
     Path path = norm(rawPath);
@@ -369,8 +398,11 @@ public abstract class TreeLockManager {
    * Same considerations of lockListing, but locks an array of paths in order
    * and returns an AutoLock that encapsulates all of them.
    *
-   * @param paths
+   * @param rawPaths an array of paths to lock.
+   * @param depth Depth.DIRECTORY to look for locks on this path only, or Depth.RECURSIVE to
+   *    *              go through the whole tree beneath this path.
    * @return AutoCloseable that encapsulate all paths
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lockListings(Path[] rawPaths, Depth depth) throws IOException {
     Path[] paths = norm(rawPaths);
@@ -406,10 +438,10 @@ public abstract class TreeLockManager {
    * may also record the start of the rename in something like a write-ahead log
    * to recover in-progress renames in the event of a failure.
    *
-   * @param src Source of the rename
-   * @param dst Destination of the rename
+   * @param rawSrc Source of the rename
+   * @param rawDst Destination of the rename
    * @return AutoCloseable to release both paths
-   * @throws IOException
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lockRename(Path rawSrc, Path rawDst) throws IOException {
     Path src = norm(rawSrc);
@@ -439,9 +471,9 @@ public abstract class TreeLockManager {
    * that read or modify the file-system but that don't necessarily need
    * exclusive access if no other concurrent operations do.
    *
-   * @param path Path to lock
+   * @param rawPath Path to lock
    * @return AutoCloseable that will release the path
-   * @throws IOException
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lock(Path rawPath) throws IOException {
     Path path = norm(rawPath);
@@ -460,9 +492,9 @@ public abstract class TreeLockManager {
    * cases that read or modify the file-system but that don't necessarily need
    * exclusive access if no other concurrent operations do.
    *
-   * @param paths Path to lock
+   * @param rawPaths array of Path to lock
    * @return AutoCloseable that will release all the paths
-   * @throws IOException
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lock(Path[] rawPaths) throws IOException {
     return innerLock(norm(rawPaths));
@@ -474,9 +506,9 @@ public abstract class TreeLockManager {
    * convenience in the FileSystem implementation where there is a distinction.
    *
    * @param extraPath Extra path to lock
-   * @param paths Paths to lock
+   * @param rawPaths array of Paths to lock
    * @return AutoCloseable that will release all the paths
-   * @throws IOException
+   * @throws IOException at any possible IO failure.
    */
   public AutoLock lock(Path extraPath, Path[] rawPaths) throws IOException {
     return innerLock(norm(rawPaths, extraPath));

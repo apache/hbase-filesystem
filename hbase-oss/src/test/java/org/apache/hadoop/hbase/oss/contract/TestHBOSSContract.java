@@ -30,13 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestHBOSSContract extends FileSystemContractBaseTest {
-
-  protected static final Logger LOG =
-      LoggerFactory.getLogger(TestHBOSSContract.class);
 
   private Path basePath;
   private Configuration conf;

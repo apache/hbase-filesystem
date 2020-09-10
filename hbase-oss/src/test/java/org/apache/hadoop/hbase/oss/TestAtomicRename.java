@@ -21,16 +21,10 @@ package org.apache.hadoop.hbase.oss;
 import java.io.IOException;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestAtomicRename extends HBaseObjectStoreSemanticsTest {
-  public static final Logger LOG =
-        LoggerFactory.getLogger(TestAtomicRename.class);
 
   @Test
   public void testAtomicRename() throws Exception {
