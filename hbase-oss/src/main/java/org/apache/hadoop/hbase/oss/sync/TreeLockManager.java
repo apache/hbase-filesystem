@@ -55,7 +55,7 @@ public abstract class TreeLockManager {
         throws IOException {
     Configuration conf = fs.getConf();
     Class<? extends TreeLockManager> impl = conf.getClass(
-        Constants.SYNC_IMPL, TreeLockManager.class, TreeLockManager.class);
+        Constants.SYNC_IMPL, ZKTreeLockManager.class, TreeLockManager.class);
     TreeLockManager instance = null;
     Exception cause = null;
     try {
