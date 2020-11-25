@@ -44,12 +44,17 @@ import org.slf4j.LoggerFactory;
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public abstract class TreeLockManager {
+
   private static final Logger LOG =
         LoggerFactory.getLogger(TreeLockManager.class);
 
   public enum Depth {
     DIRECTORY, RECURSIVE
   }
+
+  public static final long DEFAULT_WAIT_INTERVAL_WARN = 5000;
+
+  protected long waitIntervalWarn = DEFAULT_WAIT_INTERVAL_WARN;
 
   public static synchronized TreeLockManager get(FileSystem fs)
         throws IOException {
@@ -257,12 +262,17 @@ public abstract class TreeLockManager {
    */
   protected void treeWriteLock(Path path, Depth depth) throws IOException {
     int outerRetries = 0;
+    long outerInitAttempt = System.currentTimeMillis();
     do {
       int innerRetries = 0;
+      long innerInitAttempt = System.currentTimeMillis();
       do {
         // If there's already a write-lock above or below us in the tree, wait for it to leave
         if (writeLockAbove(path) || writeLockBelow(path, depth)) {
-          LOG.warn("Blocked on some parent write lock, waiting: {}", path);
+          if (this.warnIfAboveThreshold(innerInitAttempt,
+            "Blocked on some parent write lock, waiting: {}", path.toString())) {
+            innerInitAttempt = System.currentTimeMillis();
+          }
           continue;
         }
         break;
@@ -271,7 +281,10 @@ public abstract class TreeLockManager {
       writeLock(path);
       // If there's now a write-lock above or below us in the tree, release and retry
       if (writeLockAbove(path) || writeLockBelow(path, depth)) {
-        LOG.warn("Blocked on some other write lock, retrying: {}", path);
+        if (this.warnIfAboveThreshold(outerInitAttempt,
+          "Blocked on some other write lock, retrying: {}", path.toString())) {
+          outerInitAttempt = System.currentTimeMillis();
+        }
         writeUnlock(path);
         continue;
       }
@@ -299,13 +312,17 @@ public abstract class TreeLockManager {
    */
   protected void treeReadLock(Path path) throws IOException {
     int outerRetries = 0;
+    long outerInitAttempt = System.currentTimeMillis();
     do {
       int innerRetries = 0;
+      long innerInitAttempt = System.currentTimeMillis();
       do {
         // If there's a write lock above us, wait
         if (writeLockAbove(path)) {
-          LOG.warn("Blocked waiting for some parent write lock, waiting: {}",
-                path);
+          if (warnIfAboveThreshold(innerInitAttempt,
+            "Blocked waiting for some parent write lock, waiting: {}", path.toString())){
+            innerInitAttempt = System.currentTimeMillis();
+          }
           continue;
         }
         break;
@@ -314,8 +331,10 @@ public abstract class TreeLockManager {
       readLock(path);
       // If there's a write lock above us, release the lock and try again
       if (writeLockAbove(path)) {
-        LOG.warn("Blocked waiting for some parent write lock, retrying: {}",
-              path);
+        if (warnIfAboveThreshold(outerInitAttempt,
+          "Blocked waiting for some parent write lock, retrying: {}", path.toString())){
+          outerInitAttempt = System.currentTimeMillis();
+        }
         readUnlock(path);
         continue;
       }
@@ -323,6 +342,16 @@ public abstract class TreeLockManager {
     } while (retryBackoff(outerRetries++));
   }
 
+  private boolean warnIfAboveThreshold(long start, String message, String... params) {
+    long blockedTime = System.currentTimeMillis() - start;
+    if (blockedTime >= this.waitIntervalWarn) {
+      String blockWarn = Thread.currentThread().getName() + " has been waiting on a lock for "
+        + blockedTime + "ms. More details: \n";
+      LOG.warn(blockWarn + message, params);
+      return true;
+    }
+    return false;
+  }
   /**
    * Acquires an exclusive lock on a single path to create or append to a file.
    * This is required for createNonRecursive() as well as other operations to be

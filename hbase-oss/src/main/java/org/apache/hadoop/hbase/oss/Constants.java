@@ -32,4 +32,6 @@ public class Constants  {
   public static final String ZK_MAX_RETRIES = "fs.hboss.sync.zk.sleep.max.retries";
 
   public static final String CONTRACT_TEST_SCHEME = "fs.contract.test.fs.scheme";
+
+  public static final String WAIT_INTERVAL_WARN = "fs.hboss.lock-wait.interval.warning";
 }
