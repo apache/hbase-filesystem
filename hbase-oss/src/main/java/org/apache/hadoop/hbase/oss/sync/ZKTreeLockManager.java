@@ -78,6 +78,8 @@ public class ZKTreeLockManager extends TreeLockManager {
     Configuration conf = fs.getConf();
     int baseSleepTimeMs = conf.getInt(Constants.ZK_BASE_SLEEP_MS, 1000);
     int maxRetries = conf.getInt(Constants.ZK_MAX_RETRIES, 3);
+    this.waitIntervalWarn = conf.getLong(Constants.WAIT_INTERVAL_WARN,
+      TreeLockManager.DEFAULT_WAIT_INTERVAL_WARN);
     RetryPolicy retryPolicy = new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries);
 
     // Create a temporary connection to ensure the root is created, then create
