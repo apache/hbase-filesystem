@@ -38,7 +38,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseInterfaceAudience;
 import org.apache.hadoop.hbase.oss.Constants;
-import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.apache.zookeeper.KeeperException;
@@ -210,7 +209,7 @@ public class ZKTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  @VisibleForTesting
+  @InterfaceAudience.Private
   public boolean writeLockBelow(Path p, Depth depth) throws IOException {
     int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
     boolean b = writeLockBelow(p, 0, maxLevel);
@@ -218,7 +217,7 @@ public class ZKTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  @VisibleForTesting
+  @InterfaceAudience.Private
   public boolean readLockBelow(Path p, Depth depth) throws IOException {
     int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
     boolean b = readLockBelow(p, 0, maxLevel);

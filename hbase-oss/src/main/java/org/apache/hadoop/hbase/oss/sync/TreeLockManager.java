@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.Constants;
-import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
@@ -109,7 +108,7 @@ public abstract class TreeLockManager {
    * Convenience function for calling norm on an array. Returned copy of the
    * array will also be sorted for deadlock avoidance.
    */
-  @VisibleForTesting
+  @InterfaceAudience.Private
   private Path[] norm(Path[] paths) {
     Path[] newPaths = new Path[paths.length];
     for (int i = 0; i < paths.length; i++) {
@@ -204,7 +203,7 @@ public abstract class TreeLockManager {
    * @return True if a lock is found, false otherwise
    * @throws IOException at any possible IO failure.
    */
-  @VisibleForTesting
+  @InterfaceAudience.Private
   public abstract boolean writeLockBelow(Path p, Depth depth) throws IOException;
 
   /**
@@ -217,7 +216,7 @@ public abstract class TreeLockManager {
    * @return True if a lock is found, false otherwise
    * @throws IOException at any possible IO failure.
    */
-  @VisibleForTesting
+  @InterfaceAudience.Private
   public abstract boolean readLockBelow(Path p, Depth depth) throws IOException;
 
   /**
