@@ -56,7 +56,6 @@ import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager.Depth;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
@@ -119,7 +118,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
     sync = TreeLockManager.get(fs);
   }
 
-  @VisibleForTesting
+  @InterfaceAudience.Private
   TreeLockManager getLockManager() {
     return sync;
   }

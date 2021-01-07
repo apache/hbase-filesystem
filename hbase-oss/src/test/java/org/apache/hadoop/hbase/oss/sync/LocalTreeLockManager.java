@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hbase.thirdparty.com.google.common.annotations.VisibleForTesting;
+import org.apache.yetus.audience.InterfaceAudience;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +98,7 @@ public class LocalTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  @VisibleForTesting
+  @InterfaceAudience.Private
   public boolean writeLockBelow(Path p, Depth depth) {
     createLocksIfNeeded(p);
     int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
@@ -106,7 +106,7 @@ public class LocalTreeLockManager extends TreeLockManager {
   }
 
   @Override
-  @VisibleForTesting
+  @InterfaceAudience.Private
   public boolean readLockBelow(Path p, Depth depth) {
     createLocksIfNeeded(p);
     int maxLevel = (depth == Depth.DIRECTORY) ? 1 : Integer.MAX_VALUE;
