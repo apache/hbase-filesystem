@@ -38,8 +38,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <compileSource>1.8</compileSource>
+    <maven.compiler.source>${compileSource}</maven.compiler.source>
+    <maven.compiler.target>${compileSource}</maven.compiler.target>
 
     <!-- XXX If you change these versions please ensure the bundled LICENSE/NOTICE in
          hbase-oss is correct
@@ -49,6 +50,8 @@
     <commons-io.version>2.5</commons-io.version>
     <commons-lang3.version>3.6</commons-lang3.version>
     <curator.version>4.2.0</curator.version>
+    <enforcer.version>3.0.0-M3</enforcer.version>
+    <extra.enforcer.version>1.2</extra.enforcer.version>
     <hadoop2.version>2.9.2</hadoop2.version>
     <hadoop3.version>3.2.1</hadoop3.version>
     <hbase1.version>1.4.10</hbase1.version>
@@ -67,6 +70,18 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${enforcer.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>extra-enforcer-rules</artifactId>
+              <version>${extra.enforcer.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
@@ -217,6 +232,44 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
+    </profile>
+    <!-- this profile should be activated for release builds -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${compileSource}</maxJdkVersion>
+                  <message>HBase has unsupported dependencies.
+  HBase requires that all dependencies be compiled with version ${compileSource} or earlier
+  of the JDK to properly build from source.  You appear to be using a newer dependency. You can use
+  either "mvn -version" or "mvn enforcer:display-info" to verify what version is active.
+  Non-release builds can temporarily build with a newer JDK version by setting the
+  'compileSource' property (eg. mvn -DcompileSource=1.8 clean package).
+                </message>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
