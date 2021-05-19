@@ -79,11 +79,7 @@ public class TestUtils {
   }
 
   public static HBaseObjectStoreSemantics getFileSystem(Configuration conf) throws Exception {
-    // Newer versions of Hadoop will do this for us, but older ones won't
-    // This allows Maven properties, profiles, etc. to set the implementation
-    if (StringUtils.isEmpty(conf.get(Constants.SYNC_IMPL))) {
-      conf.set(Constants.SYNC_IMPL, System.getProperty(Constants.SYNC_IMPL));
-    }
+    patchFileSystemImplementation(conf);
 
     EmbeddedS3.conditionalStart(conf);
     synchronized (TestUtils.class) {
@@ -103,6 +99,25 @@ public class TestUtils {
     } catch (Exception e) {
       LOG.error(e.getMessage());
       throw e;
+    }
+  }
+
+  /**
+   * Pick up the fs.hboss.sync.impl value from the JVM system property,
+   * which is how it is passed down from maven.
+   * If this isn't set, fall back to the local tree lock.
+   * That enables IDE test runs.
+   * @param conf configuration to patch.
+   */
+  private static void patchFileSystemImplementation(Configuration conf) {
+    // Newer versions of Hadoop will do this for us, but older ones won't
+    // This allows Maven properties, profiles, etc. to set the implementation
+    if (StringUtils.isEmpty(conf.get(Constants.SYNC_IMPL))) {
+      String property = System.getProperty(Constants.SYNC_IMPL);
+      if (property == null) {
+        property = "org.apache.hadoop.hbase.oss.sync.LocalTreeLockManager";
+      }
+      conf.set(Constants.SYNC_IMPL, property);
     }
   }
 

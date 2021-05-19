@@ -43,6 +43,12 @@ public class TestHBOSSContractCreate extends AbstractContractCreateTest {
   @Test
   @Override
   public void testCreatedFileIsVisibleOnFlush() throws Throwable {
+
+    skipIfFilesNotVisibleDuringCreation();
+    super.testCreatedFileIsVisibleOnFlush();
+  }
+
+  private void skipIfFilesNotVisibleDuringCreation() {
     Configuration conf = createConfiguration();
     try {
       TestUtils.getFileSystem(conf);
@@ -53,7 +59,6 @@ public class TestHBOSSContractCreate extends AbstractContractCreateTest {
     // HBOSS satisfies the contract that this test checks for, but it also
     // relies on flush, which s3a still does not support.
     Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
-    super.testCreatedFileIsVisibleOnFlush();
   }
 
   @Test
@@ -84,5 +89,10 @@ public class TestHBOSSContractCreate extends AbstractContractCreateTest {
                          path);
       }
     }
+  }
+
+  public void testSyncable() throws Throwable {
+    skipIfFilesNotVisibleDuringCreation();
+    super.testSyncable();
   }
 }

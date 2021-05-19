@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -99,10 +101,17 @@ public class EmbeddedS3 {
    * we are omitting "@override" annotation from overridden methods.
    */
   public static class EmbeddedS3ClientFactory implements S3ClientFactory {
-
     public AmazonS3 createS3Client(URI name) {
       AmazonS3 s3 = new EmbeddedAmazonS3();
       s3.createBucket(BUCKET);
+      return s3;
+    }
+
+    public AmazonS3 createS3Client(URI uri,
+        S3ClientCreationParameters s3ClientCreationParameters)
+        throws IOException {
+      AmazonS3 s3 = new EmbeddedAmazonS3();
+      s3.createBucket(uri.getHost());
       return s3;
     }
 
@@ -172,7 +181,7 @@ public class EmbeddedS3 {
       }
     }
 
-    private Map<String, EmbeddedS3Object> bucket = new HashMap<>();
+    private Map<String, EmbeddedS3Object> bucket = new ConcurrentHashMap<>();
 
     private void simulateServerSideCopy() {
       try {

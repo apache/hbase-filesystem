@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileSystemContractBaseTest;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.HBaseObjectStoreSemantics;
@@ -30,6 +32,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+
+import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
+import static org.apache.hadoop.test.LambdaTestUtils.intercept;
+import static org.junit.Assume.assumeTrue;
 
 public class TestHBOSSContract extends FileSystemContractBaseTest {
 
@@ -121,5 +127,41 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
     if (!skip) {
       method.invoke(this, (Object[]) null);
     }
+  }
+
+  @Test
+  public void testRenameDirectoryMoveToNonExistentDirectory()
+      throws Exception {
+    skip("does not fail on S3A since HADOOP-16721");
+  }
+
+  @Test
+  public void testRenameFileMoveToNonExistentDirectory() throws Exception {
+    skip("does not fail on S3A since HADOOP-16721");
+  }
+
+  @Test
+  public void testRenameDirectoryAsExistingFile() throws Exception {
+    assumeTrue(renameSupported());
+
+    Path src = path("testRenameDirectoryAsExistingFile/dir");
+    fs.mkdirs(src);
+    Path dst = path("testRenameDirectoryAsExistingFileNew/newfile");
+    createFile(dst);
+    intercept(FileAlreadyExistsException.class,
+        () -> rename(src, dst, false, true, true));
+  }
+
+  @Test
+  public void testRenameFileAsExistingFile() throws Exception {
+    intercept(FileAlreadyExistsException.class,
+        () -> super.testRenameFileAsExistingFile());
+  }
+
+  @Test
+  public void testRenameNonExistentPath() throws Exception {
+    intercept(FileNotFoundException.class,
+        () -> super.testRenameNonExistentPath());
+
   }
 }

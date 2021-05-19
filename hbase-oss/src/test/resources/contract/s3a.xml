@@ -26,6 +26,10 @@
       fs.contract.supports-atomic-directory-delete = true
       fs.contract.supports-atomic-rename = true
 
+    fs.contract.is-blobstore tells the tests "don't expect it to be visible
+    during creation"
+
+    "fs.contract.create-visibility-delayed."
     Note that fs.contract.is-blobstore appears to be identical in meaning to
     fs.contract.create-visibility-delayed.
   -->
@@ -54,10 +58,24 @@
     <name>fs.contract.is-case-sensitive</name>
     <value>true</value>
   </property>
+  <property>
+    <name>fs.contract.rename-creates-dest-dirs</name>
+    <value>true</value>
+  </property>
 
   <property>
     <name>fs.contract.rename-returns-false-if-source-missing</name>
-    <value>true</value>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>fs.contract.rename-overwrites-dest</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>fs.contract.rename-returns-false-if-dest-exists</name>
+    <value>false</value>
   </property>
 
   <property>
