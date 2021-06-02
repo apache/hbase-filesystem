@@ -49,6 +49,8 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hbase.HBaseInterfaceAudience;
+import org.apache.hadoop.hbase.oss.metrics.MetricsOSSSource;
+import org.apache.hadoop.hbase.oss.metrics.MetricsOSSSourceImpl;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedFSDataOutputStream;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
@@ -96,6 +98,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
         LoggerFactory.getLogger(HBaseObjectStoreSemantics.class);
 
   private TreeLockManager sync;
+  private MetricsOSSSource metrics;
 
   public void initialize(URI name, Configuration conf) throws IOException {
     setConf(conf);
@@ -116,6 +119,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
 
     fs = FileSystem.get(name, internalConf);
     sync = TreeLockManager.get(fs);
+    metrics = MetricsOSSSourceImpl.getInstance();
   }
 
   @InterfaceAudience.Private
@@ -445,8 +449,20 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
   }
 
   public boolean rename(Path src, Path dst) throws IOException {
+    long startTime = System.currentTimeMillis();
+    long lockAcquiredTime = startTime;
+    long doneTime = startTime;
     try (AutoLock l = sync.lockRename(src, dst)) {
-      return fs.rename(src, dst);
+      lockAcquiredTime = System.currentTimeMillis();
+      metrics.updateAcquireRenameLockHisto(lockAcquiredTime- startTime);
+      boolean result = fs.rename(src, dst);
+      doneTime = System.currentTimeMillis();
+      metrics.updateRenameFsOperationHisto(doneTime - lockAcquiredTime);
+      return result;
+    }
+    finally {
+      long releasedLocksTime = System.currentTimeMillis();
+      metrics.updateReleaseRenameLockHisto(releasedLocksTime - doneTime);
     }
   }
 
