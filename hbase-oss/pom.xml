@@ -34,7 +34,6 @@
 
   <properties>
     <fs.hboss.sync.impl>org.apache.hadoop.hbase.oss.sync.ZKTreeLockManager</fs.hboss.sync.impl>
-    <aws-java-sdk.version>1.11.525</aws-java-sdk.version>
     <shading.prefix>org.apache.hadoop.hbase.oss.thirdparty</shading.prefix>
   </properties>
 
