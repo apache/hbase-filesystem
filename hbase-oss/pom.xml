@@ -56,6 +56,62 @@
         <fs.hboss.sync.impl>org.apache.hadoop.hbase.oss.sync.ZKTreeLockManager</fs.hboss.sync.impl>
       </properties>
     </profile>
+    <profile>
+      <id>hadoop3.2</id>
+      <activation>
+        <property>
+          <name>hadoop.profile</name>
+          <value>3.2</value>
+        </property>
+      </activation>
+      <properties>
+        <HBOSS_HADOOP_VERSION>3.2</HBOSS_HADOOP_VERSION>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase.filesystem</groupId>
+          <artifactId>hadoop3-2-testutils</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hadoop3.3</id>
+      <activation>
+        <property>
+          <name>hadoop.profile</name>
+          <value>3.3</value>
+        </property>
+      </activation>
+      <properties>
+        <HBOSS_HADOOP_VERSION>3.3</HBOSS_HADOOP_VERSION>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase.filesystem</groupId>
+          <artifactId>hadoop3-3-testutils</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hadoop-default</id>
+      <activation>
+        <property>
+          <name>!hadoop.profile</name>
+        </property>
+      </activation>
+      <properties>
+        <HBOSS_HADOOP_VERSION>3.3</HBOSS_HADOOP_VERSION>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase.filesystem</groupId>
+          <artifactId>hadoop3-3-testutils</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <build>
@@ -67,6 +123,7 @@
         <configuration>
           <systemProperties>
             <fs.hboss.sync.impl>${fs.hboss.sync.impl}</fs.hboss.sync.impl>
+            <HBOSS_HADOOP_VERSION>${HBOSS_HADOOP_VERSION}</HBOSS_HADOOP_VERSION>
           </systemProperties>
         </configuration>
       </plugin>
@@ -353,6 +410,23 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase.filesystem</groupId>
+      <artifactId>hadoop-testutils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-metrics</artifactId>
+      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
 

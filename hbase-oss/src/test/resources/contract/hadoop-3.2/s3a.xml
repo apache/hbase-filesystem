@@ -61,6 +61,11 @@
   </property>
 
   <property>
+    <name>fs.contract.rename-overwrites-dest</name>
+    <value>false</value>
+  </property>
+
+  <property>
     <name>fs.contract.rename-remove-dest-if-empty-dir</name>
     <value>true</value>
   </property>
@@ -117,11 +122,6 @@
 
   <property>
     <name>fs.contract.supports-unix-permissions</name>
-    <value>false</value>
-  </property>
-
-  <property>
-    <name>fs.contract.rename-overwrites-dest</name>
     <value>false</value>
   </property>
 

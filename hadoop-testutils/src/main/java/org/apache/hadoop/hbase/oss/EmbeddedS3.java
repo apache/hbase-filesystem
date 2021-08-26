@@ -15,14 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hbase.oss;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.s3.AbstractAmazonS3;
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
@@ -43,84 +40,26 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.s3a.S3ClientFactory;
-import org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hbase.oss.Constants.*;
-import static org.apache.hadoop.fs.s3a.Constants.*;
-
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class EmbeddedS3 {
 
-  public static boolean usingEmbeddedS3 = false;
-
-  private static final String BUCKET = "embedded";
-
-  public static void conditionalStart(Configuration conf) {
-    if (StringUtils.isEmpty(conf.get(S3_METADATA_STORE_IMPL))) {
-      conf.set(S3_METADATA_STORE_IMPL, LocalMetadataStore.class.getName());
-    }
-
-    boolean notConfigured = StringUtils.isEmpty(conf.get(DATA_URI));
-    if (notConfigured) {
-      usingEmbeddedS3 = true;
-      conf.set(S3_CLIENT_FACTORY_IMPL,
-            EmbeddedS3ClientFactory.class.getName());
-      conf.set(DATA_URI, "s3a://" + BUCKET);
-    } else {
-      usingEmbeddedS3 = false;
-    }
-  }
-
-  /**
-   * Replaces the default S3ClientFactory to inject an EmbeddedAmazonS3
-   * instance. This is currently a private API in Hadoop, but is the same method
-   * used by S3Guard's inconsistency-injection tests. The method signature
-   * defined in the interface varies depending on the Hadoop version.
-   *
-   * Due to compatibility purposes for both hadoop 2 and 3 main versions,
-   * we are omitting "@override" annotation from overridden methods.
-   */
-  public static class EmbeddedS3ClientFactory implements S3ClientFactory {
-
-    public AmazonS3 createS3Client(URI name) {
-      AmazonS3 s3 = new EmbeddedAmazonS3();
-      s3.createBucket(BUCKET);
-      return s3;
-    }
-
-    public AmazonS3 createS3Client(URI name,
-        String bucket,
-        AWSCredentialsProvider credentialSet,
-        String userAgentSuffix) {
-      AmazonS3 s3 = new EmbeddedAmazonS3();
-      s3.createBucket(bucket);
-      return s3;
-    }
-
-    public AmazonS3 createS3Client(URI name,
-        String bucket,
-        AWSCredentialsProvider credentialSet) {
-      return createS3Client(name);
-    }
-  }
+  public static final String BUCKET = "embedded";
 
   /**
    * Emulates an S3-connected client. This is the bare minimum implementation
@@ -172,7 +111,7 @@ public class EmbeddedS3 {
       }
     }
 
-    private Map<String, EmbeddedS3Object> bucket = new HashMap<>();
+    private Map<String, EmbeddedS3Object> bucket = new ConcurrentHashMap<>();
 
     private void simulateServerSideCopy() {
       try {

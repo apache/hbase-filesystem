@@ -26,6 +26,8 @@ import org.apache.hadoop.fs.contract.AbstractContractRenameTest;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
 import org.apache.hadoop.hbase.oss.TestUtils;
 
+import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
+
 /**
  * There is an S3A-specific extension of AbstractContractRenameTest, and this
  * class implements the same modifications for HBOSS-on-S3A.
@@ -68,5 +70,10 @@ public class TestHBOSSContractRenameS3A extends AbstractContractRenameTest {
 
     boolean rename = fs.rename(srcDir, destDir);
     assertFalse("s3a doesn't support rename to non-empty directory", rename);
+  }
+
+  //@Override
+  public void testRenameFileUnderFileSubdir() throws Exception {
+    skip("Rename deep paths under files is allowed");
   }
 }

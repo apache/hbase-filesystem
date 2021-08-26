@@ -45,6 +45,7 @@
     <!-- XXX If you change these versions please ensure the bundled LICENSE/NOTICE in
          hbase-oss is correct
      -->
+    <assertj.version>3.12.2</assertj.version>
     <audience-annotations.version>0.5.0</audience-annotations.version>
     <aws-java-sdk.version>1.11.1026</aws-java-sdk.version>
     <commons-io.version>2.5</commons-io.version>
@@ -52,8 +53,8 @@
     <curator.version>4.2.0</curator.version>
     <enforcer.version>3.0.0-M3</enforcer.version>
     <extra.enforcer.version>1.2</extra.enforcer.version>
-    <hadoop2.version>2.9.2</hadoop2.version>
-    <hadoop3.version>3.2.2</hadoop3.version>
+    <hadoop32.version>3.2.2</hadoop32.version>
+    <hadoop33.version>3.3.1</hadoop33.version>
     <hbase1.version>1.4.10</hbase1.version>
     <hbase2.version>2.3.6</hbase2.version>
     <hbase-thirdparty.version>3.5.1</hbase-thirdparty.version>
@@ -67,6 +68,7 @@
 
   <modules>
     <module>hbase-oss</module>
+    <module>hadoop-testutils</module>
   </modules>
 
   <build>
@@ -101,27 +103,33 @@
 
   <profiles>
     <profile>
-      <id>hadoop2</id>
+      <id>hadoop3.2</id>
       <activation>
         <property>
           <name>hadoop.profile</name>
-          <value>2</value>
+          <value>3.2</value>
         </property>
       </activation>
+      <modules>
+        <module>hadoop3-2-testutils</module>
+      </modules>
       <properties>
-        <hadoop.version>${hadoop2.version}</hadoop.version>
+        <hadoop.version>${hadoop32.version}</hadoop.version>
       </properties>
     </profile>
     <profile>
-      <id>hadoop3</id>
+      <id>hadoop3.3</id>
       <activation>
         <property>
           <name>hadoop.profile</name>
-          <value>3</value>
+          <value>3.3</value>
         </property>
       </activation>
+      <modules>
+        <module>hadoop3-3-testutils</module>
+      </modules>
       <properties>
-        <hadoop.version>${hadoop3.version}</hadoop.version>
+        <hadoop.version>${hadoop33.version}</hadoop.version>
       </properties>
     </profile>
     <profile>
@@ -131,8 +139,11 @@
           <name>!hadoop.profile</name>
         </property>
       </activation>
+      <modules>
+        <module>hadoop3-3-testutils</module>
+      </modules>
       <properties>
-        <hadoop.version>${hadoop3.version}</hadoop.version>
+        <hadoop.version>${hadoop33.version}</hadoop.version>
       </properties>
     </profile>
     <profile>
