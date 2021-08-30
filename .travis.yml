@@ -17,13 +17,14 @@ language: java
 jdk:
   - openjdk8
   - openjdk11
-matrix:
+env:
+  - HADOOP_PROFILE=2 HBASE_PROFILE=1
+  - HADOOP_PROFILE=3 HBASE_PROFILE=2
+sudo: false
+jobs:
   fast_finish: true
-  include:
-    - name: HBase Filesystem Build and Test
-      script:
-        - mvn clean install -B -V
-
+script:
+  - "mvn clean install -B -V -Dhadoop.profile=$HADOOP_PROFILE -Dhbase.profile=$HBASE_PROFILE"
 branches:
   only:
     - master
