@@ -18,13 +18,13 @@ jdk:
   - openjdk8
   - openjdk11
 env:
-  - HADOOP_PROFILE=2 HBASE_PROFILE=1
-  - HADOOP_PROFILE=3 HBASE_PROFILE=2
+  - HADOOP_PROFILE=3.2
+  - HADOOP_PROFILE=3.3
 sudo: false
 jobs:
   fast_finish: true
 script:
-  - "mvn clean install -B -V -Dhadoop.profile=$HADOOP_PROFILE -Dhbase.profile=$HBASE_PROFILE"
+  - "mvn clean install -B -V -Dhadoop.profile=$HADOOP_PROFILE"
 branches:
   only:
     - master
