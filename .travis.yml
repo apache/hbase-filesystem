@@ -20,7 +20,8 @@ jdk:
 env:
   - HADOOP_PROFILE=3.2
   - HADOOP_PROFILE=3.3
-sudo: false
+dist: xenial
+os: linux
 jobs:
   fast_finish: true
 script:
