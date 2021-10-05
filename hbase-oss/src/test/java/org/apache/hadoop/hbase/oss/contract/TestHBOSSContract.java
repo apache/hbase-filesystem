@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileSystemContractBaseTest;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.HBaseObjectStoreSemantics;
@@ -30,6 +32,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+
+import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
+import static org.apache.hadoop.hbase.oss.TestUtils.addContract;
+import static org.apache.hadoop.test.LambdaTestUtils.intercept;
+import static org.junit.Assume.assumeTrue;
 
 public class TestHBOSSContract extends FileSystemContractBaseTest {
 
@@ -47,7 +54,7 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
   public void setUp() throws Exception {
     nameThread();
     conf = new Configuration();
-    conf.addResource("contract/s3a.xml");
+    addContract(conf);
     fs = TestUtils.getFileSystem(conf);
     Assume.assumeNotNull(fs);
     HBaseObjectStoreSemantics hboss = (HBaseObjectStoreSemantics)fs;
@@ -121,5 +128,44 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
     if (!skip) {
       method.invoke(this, (Object[]) null);
     }
+  }
+
+  @Test
+  public void testRenameDirectoryMoveToNonExistentDirectory()
+      throws Exception {
+    skip("does not fail on S3A since HADOOP-16721");
+  }
+
+  @Test
+  public void testRenameFileMoveToNonExistentDirectory() throws Exception {
+    skip("does not fail on S3A since HADOOP-16721");
+  }
+
+  @Test
+  public void testRenameDirectoryAsExistingFile() throws Exception {
+    assumeTrue(renameSupported());
+    assumeTrue(TestUtils.renameToExistingDestinationSupported());
+
+    Path src = path("testRenameDirectoryAsExistingFile/dir");
+    fs.mkdirs(src);
+    Path dst = path("testRenameDirectoryAsExistingFileNew/newfile");
+    createFile(dst);
+    intercept(FileAlreadyExistsException.class,
+        () -> rename(src, dst, false, true, true));
+  }
+
+  @Test
+  public void testRenameFileAsExistingFile() throws Exception {
+    assumeTrue(TestUtils.renameToExistingDestinationSupported());
+    intercept(FileAlreadyExistsException.class,
+        () -> super.testRenameFileAsExistingFile());
+  }
+
+  @Test
+  public void testRenameNonExistentPath() throws Exception {
+    assumeTrue(TestUtils.renameToExistingDestinationSupported());
+    intercept(FileNotFoundException.class,
+        () -> super.testRenameNonExistentPath());
+
   }
 }

@@ -31,6 +31,8 @@ import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hbase.oss.TestUtils.addContract;
+
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public class HBOSSContract extends AbstractFSContract {
@@ -47,7 +49,7 @@ public class HBOSSContract extends AbstractFSContract {
   public HBOSSContract(Configuration conf) {
     super(conf);
     this.conf = conf;
-    addConfResource("contract/s3a.xml");
+    addContract(conf);
   }
 
   /**

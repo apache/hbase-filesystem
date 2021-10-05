@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hbase.oss;
 
+import static org.apache.hadoop.hbase.oss.TestUtils.addContract;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
@@ -44,7 +46,7 @@ public class HBaseObjectStoreSemanticsTest {
   @Before
   public void setup() throws Exception {
     Configuration conf = new Configuration();
-    conf.addResource("contract/s3a.xml");
+    addContract(conf);
     hboss = TestUtils.getFileSystem(conf);
     sync = hboss.getLockManager();
     hboss.mkdirs(testPathRoot());

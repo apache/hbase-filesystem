@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import java.lang.reflect.Method;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -43,6 +45,11 @@ public class TestHBOSSContractCreate extends AbstractContractCreateTest {
   @Test
   @Override
   public void testCreatedFileIsVisibleOnFlush() throws Throwable {
+    skipIfFilesNotVisibleDuringCreation();
+    super.testCreatedFileIsVisibleOnFlush();
+  }
+
+  private void skipIfFilesNotVisibleDuringCreation() {
     Configuration conf = createConfiguration();
     try {
       TestUtils.getFileSystem(conf);
@@ -53,7 +60,6 @@ public class TestHBOSSContractCreate extends AbstractContractCreateTest {
     // HBOSS satisfies the contract that this test checks for, but it also
     // relies on flush, which s3a still does not support.
     Assume.assumeFalse(TestUtils.fsIs(TestUtils.S3A, conf));
-    super.testCreatedFileIsVisibleOnFlush();
   }
 
   @Test
@@ -83,6 +89,19 @@ public class TestHBOSSContractCreate extends AbstractContractCreateTest {
         assertPathExists("expected path to be visible before anything written",
                          path);
       }
+    }
+  }
+
+  public void testSyncable() throws Throwable {
+    skipIfFilesNotVisibleDuringCreation();
+    // testSyncable() only exists in >=Hadoop-3.3.1. Selectively skip this test when
+    // the method doesn't exist.
+    try {
+      Method testSyncable = AbstractContractCreateTest.class.getMethod("testSyncable");
+      // super.testSyncable()
+      testSyncable.invoke(this);
+    } catch (NoSuchMethodException e) {
+      Assume.assumeTrue("testSyncable does not exist on the parent, skipping test", false);
     }
   }
 }
