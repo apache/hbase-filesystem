@@ -55,8 +55,7 @@
     <extra.enforcer.version>1.2</extra.enforcer.version>
     <hadoop32.version>3.2.2</hadoop32.version>
     <hadoop33.version>3.3.1</hadoop33.version>
-    <hbase1.version>1.4.10</hbase1.version>
-    <hbase2.version>2.3.6</hbase2.version>
+    <hbase.version>2.3.6</hbase.version>
     <hbase-thirdparty.version>3.5.1</hbase-thirdparty.version>
     <junit.version>4.12</junit.version>
     <log4j.version>1.2.17</log4j.version>
@@ -70,6 +69,23 @@
     <module>hbase-oss</module>
     <module>hadoop-testutils</module>
   </modules>
+
+  <!-- For testing against ZK -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-zookeeper</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-zookeeper</artifactId>
+      <version>${hbase.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <pluginManagement>
@@ -145,106 +161,6 @@
       <properties>
         <hadoop.version>${hadoop33.version}</hadoop.version>
       </properties>
-    </profile>
-    <profile>
-      <id>hbase-default</id>
-      <activation>
-        <property>
-          <name>!hbase.profile</name>
-        </property>
-      </activation>
-      <properties>
-        <hbase.version>${hbase2.version}</hbase.version>
-      </properties>
-      <!-- For testing against ZK -->
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-zookeeper</artifactId>
-          <version>${hbase2.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-zookeeper</artifactId>
-          <version>${hbase2.version}</version>
-          <type>test-jar</type>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>hbase2</id>
-      <activation>
-        <property>
-          <name>hbase.profile</name>
-          <value>2</value>
-        </property>
-      </activation>
-      <properties>
-        <hbase.version>${hbase2.version}</hbase.version>
-      </properties>
-      <!-- For testing against ZK -->
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-zookeeper</artifactId>
-          <version>${hbase2.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-zookeeper</artifactId>
-          <version>${hbase2.version}</version>
-          <type>test-jar</type>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>hbase1</id>
-      <activation>
-        <property>
-          <name>hbase.profile</name>
-          <value>1</value>
-        </property>
-      </activation>
-      <properties>
-        <hbase.version>${hbase1.version}</hbase.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hbase.thirdparty</groupId>
-          <artifactId>hbase-shaded-miscellaneous</artifactId>
-          <version>${hbase-thirdparty.version}</version>
-        </dependency>
-        <!-- For testing against ZK -->
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-testing-util</artifactId>
-          <version>${hbase1.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-testing-util</artifactId>
-          <version>${hbase1.version}</version>
-          <type>test-jar</type>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-minikdc</artifactId>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.directory.jdbm</groupId>
-              <artifactId>apacheds-jdbm1</artifactId>
-            </exclusion>
-          </exclusions>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
     </profile>
     <!-- this profile should match the name of the release profile in the root asf pom -->
     <profile>
