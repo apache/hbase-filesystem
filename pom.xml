@@ -48,7 +48,7 @@
     <assertj.version>3.12.2</assertj.version>
     <audience-annotations.version>0.5.0</audience-annotations.version>
     <aws-java-sdk.version>1.11.1026</aws-java-sdk.version>
-    <commons-io.version>2.5</commons-io.version>
+    <commons-io.version>2.11.0</commons-io.version>
     <commons-lang3.version>3.6</commons-lang3.version>
     <curator.version>4.2.0</curator.version>
     <enforcer.version>3.0.0-M3</enforcer.version>
