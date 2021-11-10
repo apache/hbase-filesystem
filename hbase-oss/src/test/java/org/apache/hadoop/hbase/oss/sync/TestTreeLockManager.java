@@ -36,7 +36,7 @@ public class TestTreeLockManager extends HBaseObjectStoreSemanticsTest {
 
   @Test
   public void testLockBelowChecks() throws Exception {
-    Assume.assumeFalse(sync instanceof NullTreeLockManager);
+    Assume.assumeFalse(getLockManager() instanceof NullTreeLockManager);
 
     Path parent = testPath("testListingLevels");
     Path child = new Path(parent, "child");

@@ -43,6 +43,10 @@ public class HBaseObjectStoreSemanticsTest {
     return TestUtils.testPath(hboss, path);
   }
 
+  public TreeLockManager getLockManager() {
+    return sync;
+  }
+
   @Before
   public void setup() throws Exception {
     Configuration conf = new Configuration();

@@ -21,7 +21,10 @@ package org.apache.hadoop.hbase.oss.sync;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.io.retry.RetryPolicy.RetryAction;
@@ -471,7 +474,7 @@ public abstract class TreeLockManager {
    * @return AutoCloseable to release both paths
    * @throws IOException at any possible IO failure.
    */
-  public AutoLock lockRename(Path rawSrc, Path rawDst) throws IOException {
+  public AutoLock lockRename(Path rawSrc, Path rawDst, Future<Boolean> successFuture) throws IOException {
     Path src = norm(rawSrc);
     Path dst = norm(rawDst);
     LOG.debug("About to lock for rename: from {} to {}", src, dst);
@@ -484,8 +487,29 @@ public abstract class TreeLockManager {
     }
     return new AutoLock() {
       public void close() throws IOException {
+        // We have to clean up the src znodes:
+        //   1. If the rename was successful
+        //   2. While we still hold the write lock
         LOG.debug("About to unlock after rename: from {} to {}", src, dst);
         try {
+          Boolean renameSuccess;
+          try {
+            renameSuccess = successFuture.get();
+          } catch (InterruptedException | ExecutionException e) {
+            LOG.warn("Unable to determine if filesystem rename was successful. Assuming it failed.", e);
+            renameSuccess = false;
+          }
+          if (renameSuccess != null && renameSuccess.booleanValue()) {
+            // Tricky... HBossContract tests tough things like
+            //   `rename("/", "/somethingelse")`
+            // This means we grabbed write locks on
+            //    /               (src)
+            //    /somethingelse  (dst)
+            // Thus, we can't safely delete the znodes for src as it may
+            // then also affect the (held) lock on the dst. This is why
+            // we only delete the znodes on success.
+            recursiveDelete(src);
+          }
           writeUnlock(src);
         } finally {
           writeUnlock(dst);

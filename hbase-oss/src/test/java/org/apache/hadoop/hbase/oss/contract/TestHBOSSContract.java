@@ -46,6 +46,11 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
   @Rule
   public TestName methodName = new TestName();
 
+  @Override
+  protected int getGlobalTimeout() {
+    return Integer.MAX_VALUE;
+  }
+
   private void nameThread() {
     Thread.currentThread().setName("JUnit-" + methodName.getMethodName());
   }
