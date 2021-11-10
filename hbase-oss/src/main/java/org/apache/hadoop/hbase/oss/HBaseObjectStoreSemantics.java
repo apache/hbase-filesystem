@@ -24,6 +24,8 @@ import java.net.URI;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.ContentSummary;
@@ -452,13 +454,21 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
     long startTime = System.currentTimeMillis();
     long lockAcquiredTime = startTime;
     long doneTime = startTime;
-    try (AutoLock l = sync.lockRename(src, dst)) {
+    // Future to pass into the AutoLock so it knows if it should clean up.
+    final CompletableFuture<Boolean> renameResult = new CompletableFuture<>();
+    try (AutoLock l = sync.lockRename(src, dst, renameResult)) {
       lockAcquiredTime = System.currentTimeMillis();
       metrics.updateAcquireRenameLockHisto(lockAcquiredTime- startTime);
-      boolean result = fs.rename(src, dst);
-      doneTime = System.currentTimeMillis();
-      metrics.updateRenameFsOperationHisto(doneTime - lockAcquiredTime);
-      return result;
+      // Defaulting to false in the case that fs.rename throws an exception
+      boolean result = false;
+      try {
+        result = fs.rename(src, dst);
+        return result;
+      } finally {
+        renameResult.complete(result);
+        doneTime = System.currentTimeMillis();
+        metrics.updateRenameFsOperationHisto(doneTime - lockAcquiredTime);
+      }
     }
     finally {
       long releasedLocksTime = System.currentTimeMillis();

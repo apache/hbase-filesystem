@@ -68,7 +68,7 @@ public class ZKTreeLockManager extends TreeLockManager {
     root = "/hboss";
   }
 
-  private static final String lockSubZnode = ".hboss-lock-znode";
+  public static final String LOCK_SUB_ZNODE = ".hboss-lock-znode";
 
   private Map<Path,InterProcessReadWriteLock> lockCache = new HashMap<>();
 
@@ -161,7 +161,7 @@ public class ZKTreeLockManager extends TreeLockManager {
       get(p).writeLock().release();
     } catch(IllegalMonitorStateException e) {
       // Reentrant locks might be acquired multiple times
-      LOG.error("Tried to release unacquired write lock: {}", p);
+      LOG.error("Tried to release unacquired write lock: {}", p, e);
       throw e;
     } catch (Exception e) {
       throw new IOException("Exception during write unlocking of path " + p, e);
@@ -226,10 +226,11 @@ public class ZKTreeLockManager extends TreeLockManager {
 
   @Override
   protected void recursiveDelete(Path p) throws IOException {
+    LOG.debug("Removing all mutex and znodes for paths beneath {}", p);
     try {
       ZKPaths.deleteChildren(curator.getZookeeperClient().getZooKeeper(),
             p.toString(), !p.isRoot());
-      // Before this method is called, we have a guarantee that 
+      // Before this method is called, we have a guarantee that
       //   1. There are no write locks above or below us
       //   2. There are no read locks below us
       // As such, we can just remove locks beneath us as we find them.
@@ -257,7 +258,7 @@ public class ZKTreeLockManager extends TreeLockManager {
    *
    * Specifically, this method will return true if the given path is a sub-directory
    * of the parent or a file in the directory represented by the parent. This method
-   * returns false if the parent and the given path are the same. 
+   * returns false if the parent and the given path are the same.
    */
   boolean isBeneath(Path parent, Path given) {
     if (parent.equals(given)) {
@@ -287,7 +288,7 @@ public class ZKTreeLockManager extends TreeLockManager {
       if (level < maxLevel) {
         List<String> children = curator.getChildren().forPath(p.toString());
         for (String child : children) {
-          if (child.equals(lockSubZnode)) {
+          if (child.equals(LOCK_SUB_ZNODE)) {
             continue;
           }
           if (writeLockBelow(new Path(p, child), level+1, maxLevel)) {
@@ -312,7 +313,7 @@ public class ZKTreeLockManager extends TreeLockManager {
       if (level < maxLevel) {
         List<String> children = curator.getChildren().forPath(p.toString());
         for (String child : children) {
-          if (child.equals(lockSubZnode)) {
+          if (child.equals(LOCK_SUB_ZNODE)) {
             continue;
           }
           if (readLockBelow(new Path(p, child), level+1, maxLevel)) {
@@ -357,6 +358,9 @@ public class ZKTreeLockManager extends TreeLockManager {
     StringBuilder sb = new StringBuilder();
     Map<Path,InterProcessReadWriteLock> cache = getUnmodifiableCache();
     for (Entry<Path,InterProcessReadWriteLock> entry : cache.entrySet()) {
+      if (sb.length() > 0) {
+        sb.append("\n");
+      }
       sb.append(entry.getKey()).append("=").append(describeLock(entry.getValue()));
     }
     return sb.toString();
@@ -382,7 +386,7 @@ public class ZKTreeLockManager extends TreeLockManager {
 
   private synchronized InterProcessReadWriteLock get(Path path) throws IOException {
     if (!lockCache.containsKey(path)) {
-      String zkPath = new Path(path, lockSubZnode).toString();
+      String zkPath = new Path(path, LOCK_SUB_ZNODE).toString();
       try {
         ZKPaths.mkdirs(curator.getZookeeperClient().getZooKeeper(), zkPath, true);
       } catch (KeeperException.NodeExistsException e) {
