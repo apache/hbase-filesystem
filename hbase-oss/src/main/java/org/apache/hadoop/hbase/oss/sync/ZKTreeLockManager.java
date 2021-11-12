@@ -241,7 +241,7 @@ public class ZKTreeLockManager extends TreeLockManager {
     }
   }
 
-  private synchronized void removeInMemoryLocks(Path p) {
+  synchronized void removeInMemoryLocks(Path p) {
     Iterator<Entry<Path,InterProcessReadWriteLock>> iter = lockCache.entrySet().iterator();
     while (iter.hasNext()) {
       Entry<Path,InterProcessReadWriteLock> entry = iter.next();
@@ -252,12 +252,31 @@ public class ZKTreeLockManager extends TreeLockManager {
     }
   }
 
-  private boolean isBeneath(Path parent, Path other) {
-    if (parent.equals(other)) {
+  /**
+   * Returns true iff the given path is contained beneath the parent path.
+   *
+   * Specifically, this method will return true if the given path is a sub-directory
+   * of the parent or a file in the directory represented by the parent. This method
+   * returns false if the parent and the given path are the same. 
+   */
+  boolean isBeneath(Path parent, Path given) {
+    if (parent.equals(given)) {
       return false;
     }
-    // Is `other` fully contained in some path beneath the parent.
-    return 0 == other.toString().indexOf(parent.toString());
+    String parentPathStr = parent.toString();
+    String givenPathStr = given.toString();
+    int offset = givenPathStr.indexOf(parentPathStr);
+    // Is the given path fully contained in some path beneath the parent.
+    if (0 != offset) {
+      return false;
+    }
+    // The given path is a substring of the parent path. It might share a common name (e.g. /foo and /foo1)
+    // or it might be a subdirectory or file in the parent (e.g. /foo and /foo/bar)
+    String givenRemainer = givenPathStr.substring(parentPathStr.length());
+    // If the remainder of the given path starts with a '/', then it's contained beneath the parent.
+    // If there are additional characters, the given path simple shares a prefix in the file/dir represented
+    // by the parent.
+    return givenRemainer.startsWith(Path.SEPARATOR);
   }
 
   private boolean writeLockBelow(Path p, int level, int maxLevel) throws IOException {
