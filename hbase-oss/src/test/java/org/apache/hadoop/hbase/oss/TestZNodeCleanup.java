@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.hadoop.conf.Configuration;
@@ -74,9 +75,20 @@ public class TestZNodeCleanup extends HBaseObjectStoreSemanticsTest {
 
   @After
   public void teardown() throws Exception {
+    String zkRoot = lockManager.norm(TestUtils.testPathRoot(hboss)).toString();
+    LOG.info("Dumping contents of ZooKeeper after test from {}", zkRoot);
+    printZkBFS(zkRoot);
     if (zk != null) {
       zk.close();
       zk = null;
+    }
+  }
+
+  void printZkBFS(String path) throws Exception {
+    LOG.info(path);
+    List<String> children = zk.getChildren(path, false);
+    for (String child : children) {
+      printZkBFS(path + "/" + child);
     }
   }
 
