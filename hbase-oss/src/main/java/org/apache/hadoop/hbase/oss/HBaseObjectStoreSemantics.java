@@ -38,11 +38,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FilterFileSystem;
 import org.apache.hadoop.fs.FsStatus;
+import org.apache.hadoop.fs.FutureDataInputStreamBuilder;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Options.ChecksumOpt;
 import org.apache.hadoop.fs.ParentNotDirectoryException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.PathHandle;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.UnsupportedFileSystemException;
 import org.apache.hadoop.fs.XAttrSetFlag;
@@ -56,6 +58,7 @@ import org.apache.hadoop.hbase.oss.metrics.MetricsOSSSourceImpl;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedFSDataOutputStream;
 import org.apache.hadoop.hbase.oss.sync.AutoLock.LockedRemoteIterator;
+import org.apache.hadoop.hbase.oss.sync.LockedFutureDataInputStreamBuilder;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager;
 import org.apache.hadoop.hbase.oss.sync.TreeLockManager.Depth;
 import org.apache.hadoop.security.AccessControlException;
@@ -168,6 +171,26 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
     try (AutoLock l = sync.lock(f)) {
       return fs.open(f);
     }
+  }
+
+  @Override
+  public FutureDataInputStreamBuilder openFile(final Path path)
+      throws IOException, UnsupportedOperationException {
+    return new LockedFutureDataInputStreamBuilder(sync, path,
+        fs.openFile(path));
+  }
+
+  /**
+   * This is mostly unsupported, and as there's no way to
+   * get the path from a pathHandle, impossible to lock.
+   * @param pathHandle path
+   * @return never returns successfully.
+   * @throws UnsupportedOperationException always
+   */
+  @Override
+  public FutureDataInputStreamBuilder openFile(final PathHandle pathHandle)
+      throws IOException, UnsupportedOperationException {
+    throw new UnsupportedOperationException("openFile(PathHandle) unsupported");
   }
 
   public FSDataOutputStream create(Path f) throws IOException {
