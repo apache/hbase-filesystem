@@ -23,7 +23,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hadoop3-2-testutils</artifactId>
-  <name>Test utility classes for Hadoop 3.1.x and 3.2.x</name>
+  <name>Test utility classes for Hadoop 3.2.x</name>
   <packaging>jar</packaging>
 
   <dependencies>
