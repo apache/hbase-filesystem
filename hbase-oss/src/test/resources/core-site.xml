@@ -42,18 +42,6 @@
         </property>
       </configuration>
 
-    S3Guard will also be configured to the LocalMetadataStore implementation
-    by default. You may wish to configure DynamoDBMetadataStore for integration
-    or if S3Guard is not needed (S3-compatible appliance, for instance), you
-    can disable it by configuring NullMetadataStore explicitly (see below).
-  -->
-
-  <!--
-  <property>
-    <name>fs.s3a.metadatastore.impl</name>
-    <value>org.apache.hadoop.fs.s3a.s3guard.NullMetadataStore</value>
-    <description>Uncomment to disable S3Guard entirely</description>
-  </property>
   -->
 
   <include xmlns="http://www.w3.org/2001/XInclude" href="auth-keys.xml">

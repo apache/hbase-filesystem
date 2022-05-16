@@ -19,7 +19,6 @@
 package org.apache.hadoop.hbase.oss;
 
 import static org.apache.hadoop.fs.s3a.Constants.S3_CLIENT_FACTORY_IMPL;
-import static org.apache.hadoop.fs.s3a.Constants.S3_METADATA_STORE_IMPL;
 import static org.apache.hadoop.hbase.oss.Constants.DATA_URI;
 
 import java.net.URI;
@@ -29,7 +28,6 @@ import java.net.URL;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore;
 import org.apache.hadoop.hbase.oss.sync.EmbeddedZK;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.yetus.audience.InterfaceAudience;
@@ -69,9 +67,6 @@ public class TestUtils {
   public static boolean usingEmbeddedS3 = false;
 
   public static void conditionalStart(Configuration conf) {
-    if (StringUtils.isEmpty(conf.get(S3_METADATA_STORE_IMPL))) {
-      conf.set(S3_METADATA_STORE_IMPL, LocalMetadataStore.class.getName());
-    }
 
     boolean notConfigured = StringUtils.isEmpty(conf.get(DATA_URI));
     if (notConfigured) {

@@ -74,19 +74,17 @@ You may also want to configure:
 
 An implementation based on Amazon's DynamoDB lock library was considered but
 was not completed due to the lack of an efficient way to traverse the tree and
-discover locks on child nodes. The benefit is that S3Guard is required for s3a
-use and as such there's a dependency on DynamoDB anyway.
+discover locks on child nodes.
 
 ## Storage Implementations
 
 Currently HBOSS is primarily designed for and exclusively tested with Hadoop's
-s3a client against Amazon S3. *S3Guard must be enabled, which is available in
-Hadoop 2.9.0, 3.0.0, and higher*.
+s3a client against Amazon S3.
 
-Both the use of S3Guard and Zookeeper for locking (i.e. Zookeeper) have
+The use of Zookeeper for locking (i.e. Zookeeper) have
 implications for other clients that are not configured to share the same
-metadata store and Zookeeper ensemble. Ideally, all clients should be have the
-same configuration in these respects. Read-only clients may not share these
+Zookeeper ensemble. Ideally, all clients should have the
+same configuration. Read-only clients may not share these
 resources with the HBase processes, but they will not have the added safety
 provided by these features. Clients that do not share these resources and modify
 data can compromise the correctness of HBase.

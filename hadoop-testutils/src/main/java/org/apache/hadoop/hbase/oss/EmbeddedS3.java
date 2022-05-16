@@ -23,6 +23,7 @@ import com.amazonaws.services.s3.AbstractAmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
@@ -143,6 +144,11 @@ public class EmbeddedS3 {
     public void deleteObject(String bucketName, String key) {
       LOG.debug("deleteObject: {}", key);
       bucket.remove(key);
+    }
+
+    public void deleteObject(DeleteObjectRequest request) {
+      LOG.debug("deleteObject: {}", request);
+      bucket.remove(request.getKey());
     }
 
     public DeleteObjectsResult deleteObjects(DeleteObjectsRequest request) {
