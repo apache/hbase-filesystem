@@ -18,7 +18,6 @@ jdk:
   - openjdk8
   - openjdk11
 env:
-  - HADOOP_PROFILE=3.2
   - HADOOP_PROFILE=3.3
 dist: xenial
 os: linux

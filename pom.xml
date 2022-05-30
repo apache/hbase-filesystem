@@ -53,8 +53,7 @@
     <curator.version>4.2.0</curator.version>
     <enforcer.version>3.0.0-M3</enforcer.version>
     <extra.enforcer.version>1.2</extra.enforcer.version>
-    <hadoop32.version>3.2.2</hadoop32.version>
-    <hadoop33.version>3.3.1</hadoop33.version>
+    <hadoop.version>3.3.2</hadoop.version>
     <hbase.version>2.3.6</hbase.version>
     <hbase-thirdparty.version>3.5.1</hbase-thirdparty.version>
     <junit.version>4.12</junit.version>
@@ -63,6 +62,9 @@
     <!-- Keep this in sync with the version of ZK
          that the corresponding HBase version is using. -->
     <zookeeper.version>3.5.7</zookeeper.version>
+    <!-- system property for the hadoop version passed
+         down in tests. -->
+    <HBOSS_HADOOP_VERSION>3.3</HBOSS_HADOOP_VERSION>
   </properties>
 
   <modules>
@@ -119,21 +121,8 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>hadoop3.2</id>
-      <activation>
-        <property>
-          <name>hadoop.profile</name>
-          <value>3.2</value>
-        </property>
-      </activation>
-      <modules>
-        <module>hadoop3-2-testutils</module>
-      </modules>
-      <properties>
-        <hadoop.version>${hadoop32.version}</hadoop.version>
-      </properties>
-    </profile>
+    <!-- empty profile retained for consistency and in case a new profile is ever
+         required in future -->
     <profile>
       <id>hadoop3.3</id>
       <activation>
@@ -142,12 +131,6 @@
           <value>3.3</value>
         </property>
       </activation>
-      <modules>
-        <module>hadoop3-3-testutils</module>
-      </modules>
-      <properties>
-        <hadoop.version>${hadoop33.version}</hadoop.version>
-      </properties>
     </profile>
     <profile>
       <id>hadoop-default</id>
@@ -156,12 +139,6 @@
           <name>!hadoop.profile</name>
         </property>
       </activation>
-      <modules>
-        <module>hadoop3-3-testutils</module>
-      </modules>
-      <properties>
-        <hadoop.version>${hadoop33.version}</hadoop.version>
-      </properties>
     </profile>
     <!-- this profile should match the name of the release profile in the root asf pom -->
     <profile>

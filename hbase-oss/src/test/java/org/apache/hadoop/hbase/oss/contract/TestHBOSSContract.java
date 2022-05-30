@@ -144,7 +144,6 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
   @Test
   public void testRenameDirectoryAsExistingFile() throws Exception {
     assumeTrue(renameSupported());
-    assumeTrue(TestUtils.renameToExistingDestinationSupported());
 
     Path src = path("testRenameDirectoryAsExistingFile/dir");
     fs.mkdirs(src);
@@ -156,14 +155,12 @@ public class TestHBOSSContract extends FileSystemContractBaseTest {
 
   @Test
   public void testRenameFileAsExistingFile() throws Exception {
-    assumeTrue(TestUtils.renameToExistingDestinationSupported());
     intercept(FileAlreadyExistsException.class,
         () -> super.testRenameFileAsExistingFile());
   }
 
   @Test
   public void testRenameNonExistentPath() throws Exception {
-    assumeTrue(TestUtils.renameToExistingDestinationSupported());
     intercept(FileNotFoundException.class,
         () -> super.testRenameNonExistentPath());
 
