@@ -57,25 +57,6 @@
       </properties>
     </profile>
     <profile>
-      <id>hadoop3.2</id>
-      <activation>
-        <property>
-          <name>hadoop.profile</name>
-          <value>3.2</value>
-        </property>
-      </activation>
-      <properties>
-        <HBOSS_HADOOP_VERSION>3.2</HBOSS_HADOOP_VERSION>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hbase.filesystem</groupId>
-          <artifactId>hadoop3-2-testutils</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>hadoop3.3</id>
       <activation>
         <property>
@@ -83,16 +64,6 @@
           <value>3.3</value>
         </property>
       </activation>
-      <properties>
-        <HBOSS_HADOOP_VERSION>3.3</HBOSS_HADOOP_VERSION>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hbase.filesystem</groupId>
-          <artifactId>hadoop3-3-testutils</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>hadoop-default</id>
@@ -101,16 +72,6 @@
           <name>!hadoop.profile</name>
         </property>
       </activation>
-      <properties>
-        <HBOSS_HADOOP_VERSION>3.3</HBOSS_HADOOP_VERSION>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hbase.filesystem</groupId>
-          <artifactId>hadoop3-3-testutils</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
 

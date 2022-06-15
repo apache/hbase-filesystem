@@ -42,8 +42,11 @@ public class TestUtils {
   public static final Logger LOG =
         LoggerFactory.getLogger(TestUtils.class);
 
-  public static enum HadoopVersion {
-    HADOOP32("3.2"),
+  /**
+   * Hadoop version as determined by the passed in system property.
+   */
+  public enum HadoopVersion {
+
     HADOOP33("3.3");
 
     private final String versionIdentifier;
@@ -78,13 +81,15 @@ public class TestUtils {
     }
   }
 
+  /**
+   * Add the appropriate contract resources for the active hadoop
+   * version.
+   * @param conf configuration to update
+   */
   public static void addContract(Configuration conf) {
     final HadoopVersion version = getDesiredHadoopVersion();
     String contractFile;
     switch (version) {
-    case HADOOP32:
-      contractFile = "contract/hadoop-3.2/s3a.xml";
-      break;
     case HADOOP33:
       contractFile = "contract/hadoop-3.3/s3a.xml";
       break;
@@ -106,8 +111,6 @@ public class TestUtils {
   public static String getEmbeddedS3ClientFactoryClassName() {
     final HadoopVersion version = getDesiredHadoopVersion();
     switch (version) {
-    case HADOOP32:
-      return "org.apache.hadoop.hbase.oss.Hadoop32EmbeddedS3ClientFactory";
     case HADOOP33:
       return "org.apache.hadoop.hbase.oss.Hadoop33EmbeddedS3ClientFactory";
     }
@@ -135,16 +138,6 @@ public class TestUtils {
     LOG.error("Found HBOSS_HADOOP_VERSION property set to '{}',"
         + "but there is no corresponding HadoopVersion enum value", hadoopVersPropValue);
     throw new RuntimeException("Unable to determine S3ClientFactory to instantiate");
-  }
-
-  public static boolean renameToExistingDestinationSupported() {
-    HadoopVersion version = getDesiredHadoopVersion();
-    // Hadoop 3.2 and below don't support the additional checks added
-    // by HADOOP-16721 around renames.
-    if (version == HadoopVersion.HADOOP32) {
-      return false;
-    }
-    return true;
   }
 
   public static String getScheme(Configuration conf) {
