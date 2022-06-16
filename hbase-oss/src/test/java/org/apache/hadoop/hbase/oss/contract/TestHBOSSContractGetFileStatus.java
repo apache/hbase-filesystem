@@ -33,7 +33,7 @@ public class TestHBOSSContractGetFileStatus extends AbstractContractGetFileStatu
       TestUtils.disableFilesystemCaching(conf);
     } catch (Exception e) {
       e.printStackTrace();
-      fail("Exception configuring FS: " + e);
+      throw new AssertionError("Exception configuring FS: " + e, e);
     }
     return conf;
   }

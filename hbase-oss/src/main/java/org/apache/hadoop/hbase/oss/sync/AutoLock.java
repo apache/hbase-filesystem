@@ -116,8 +116,8 @@ public interface AutoLock extends AutoCloseable {
     }
 
     private final FSDataOutputStream stream;
-    private AutoLock lock;
-    private AtomicBoolean closed = new AtomicBoolean(false);
+    private final AutoLock lock;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     private void checkClosed() throws IOException {
       if (closed.get()) {
@@ -160,7 +160,9 @@ public interface AutoLock extends AutoCloseable {
 
     @Override
     public String toString() {
-      return "LockedFSDataOutputStream:" + stream.toString();
+      return "LockedFSDataOutputStream:"
+          + " closed=" + closed.get() + " "
+          + stream.toString();
     }
 
     @Override

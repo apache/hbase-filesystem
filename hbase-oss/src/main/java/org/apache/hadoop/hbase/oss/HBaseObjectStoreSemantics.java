@@ -32,17 +32,20 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FSDataOutputStreamBuilder;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FilterFileSystem;
 import org.apache.hadoop.fs.FsStatus;
+import org.apache.hadoop.fs.FutureDataInputStreamBuilder;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Options.ChecksumOpt;
 import org.apache.hadoop.fs.ParentNotDirectoryException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.PathHandle;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.UnsupportedFileSystemException;
 import org.apache.hadoop.fs.XAttrSetFlag;
@@ -64,6 +67,8 @@ import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hbase.oss.Constants.CAPABILITY_HBOSS;
 
 /**
  * A FileSystem implementation that layers locking logic on top of another,
@@ -102,6 +107,17 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
   private TreeLockManager sync;
   private MetricsOSSSource metrics;
 
+  private S3ABindingSupport bindingSupport;
+
+  /**
+   * Get the tree lock for this instance; null until
+   * initialized.
+   * @return the lock manager.
+   */
+  private TreeLockManager getSync() {
+    return sync;
+  }
+
   public void initialize(URI name, Configuration conf) throws IOException {
     setConf(conf);
 
@@ -122,6 +138,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
     fs = FileSystem.get(name, internalConf);
     sync = TreeLockManager.get(fs);
     metrics = MetricsOSSSourceImpl.getInstance();
+    bindingSupport = new S3ABindingSupport(fs);
   }
 
   @InterfaceAudience.Private
@@ -916,4 +933,44 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
       fs.removeXAttr(path, name);
     }
   }
+
+  @Override
+  public boolean hasPathCapability(final Path path, final String capability) throws IOException {
+    if (CAPABILITY_HBOSS.equalsIgnoreCase(capability)) {
+      return true;
+    }
+    return fs.hasPathCapability(path, capability);
+  }
+
+  @Override
+  public FutureDataInputStreamBuilder openFile(final Path path)
+      throws IOException, UnsupportedOperationException {
+    return new LockedOpenFileBuilder(
+        path,
+        getSync(),
+        fs.openFile(path),
+        bindingSupport.getPropagateStatusProbe());
+  }
+
+  /**
+   * This is rarely supported, and as there's no way to
+   * get the path from a pathHandle, impossible to lock.
+   * @param pathHandle path
+   * @return never returns successfully.
+   * @throws UnsupportedOperationException always
+   */
+  @Override
+  public FutureDataInputStreamBuilder openFile(final PathHandle pathHandle)
+      throws IOException, UnsupportedOperationException {
+    throw new UnsupportedOperationException("openFile(PathHandle) unsupported");
+  }
+
+  @Override
+  public FSDataOutputStreamBuilder createFile(final Path path) {
+    return new LockedCreateFileBuilder(this,
+        path,
+        getSync(),
+        super.createFile(path));
+  }
+
 }

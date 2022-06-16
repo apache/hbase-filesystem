@@ -70,8 +70,7 @@ public class HBOSSContract extends AbstractFSContract {
       try {
         fs = TestUtils.getFileSystem(conf);
       } catch (Exception e) {
-        LOG.error(e.getMessage());
-        e.printStackTrace();
+        LOG.error(e.toString(), e);
         throw new IOException("Failed to get FS", e);
       }
     }

@@ -75,9 +75,11 @@ public class TestZNodeCleanup extends HBaseObjectStoreSemanticsTest {
 
   @After
   public void teardown() throws Exception {
-    String zkRoot = lockManager.norm(TestUtils.testPathRoot(hboss)).toString();
-    LOG.info("Dumping contents of ZooKeeper after test from {}", zkRoot);
-    printZkBFS(zkRoot);
+    if (lockManager != null) {
+      String zkRoot = lockManager.norm(TestUtils.testPathRoot(hboss)).toString();
+      LOG.info("Dumping contents of ZooKeeper after test from {}", zkRoot);
+      printZkBFS(zkRoot);
+    }
     if (zk != null) {
       zk.close();
       zk = null;

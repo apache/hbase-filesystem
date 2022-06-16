@@ -49,11 +49,19 @@ public class HBaseObjectStoreSemanticsTest {
 
   @Before
   public void setup() throws Exception {
-    Configuration conf = new Configuration();
+    Configuration conf = createConfiguration();
     addContract(conf);
     hboss = TestUtils.getFileSystem(conf);
     sync = hboss.getLockManager();
     hboss.mkdirs(testPathRoot());
+  }
+
+  /**
+   * Create the configuration for the test FS.
+   * @return a configuration.
+   */
+  protected Configuration createConfiguration() {
+    return new Configuration();
   }
 
   @After
