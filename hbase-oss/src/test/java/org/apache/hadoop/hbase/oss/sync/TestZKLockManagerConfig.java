@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hbase.oss.sync;
 
+import java.net.URI;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -50,8 +52,10 @@ public class TestZKLockManagerConfig {
       conf.unset(Constants.ZK_CONN_STRING);
       assertNull(conf.get(Constants.ZK_CONN_STRING));
       
-      // Get a LocalFS -- we don't really care about it, just passing it to the lockManager.
-      FileSystem fs = LocalFileSystem.get(conf);
+      // Create a LocalFS -- we don't really care about it, just passing it to the lockManager.
+      // why a new instance? to avoid problems with cached fs instances across tests.
+      FileSystem fs = new LocalFileSystem();
+      fs.initialize(URI.create("file:///"), conf);
 
       // Initializing the ZKTreeLockManager should succeed, even when we only have
       // the hbase.zookeeper.quorum config property set.

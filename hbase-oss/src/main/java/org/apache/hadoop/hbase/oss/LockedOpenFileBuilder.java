@@ -48,9 +48,12 @@ public class LockedOpenFileBuilder extends
     implements FutureDataInputStreamBuilder {
 
   private static final Logger LOG =
-        LoggerFactory.getLogger(LockedOpenFileBuilder.class);
+      LoggerFactory.getLogger(LockedOpenFileBuilder.class);
 
   private final Function<FileStatus, Boolean> propagateStatusProbe;
+
+  private boolean wasStatusPropagated;
+
   public LockedOpenFileBuilder(@Nonnull final Path path,
       final TreeLockManager sync,
       final FutureDataInputStreamBuilder wrapped,
@@ -62,12 +65,15 @@ public class LockedOpenFileBuilder extends
 
   /**
    * Update the file status if the status probe is happy.
+   *
    * @param status status.
+   *
    * @return the builder.
    */
   public FutureDataInputStreamBuilder withFileStatus(
       final FileStatus status) {
-    if (propagateStatusProbe.apply(status)) {
+    if (status != null && propagateStatusProbe.apply(status)) {
+      wasStatusPropagated = true;
       getWrapped().withFileStatus(status);
     }
 
@@ -78,12 +84,22 @@ public class LockedOpenFileBuilder extends
    * The completion operation simply logs the value at debug.
    * The open may include an async HEAD call, or skip the probe
    * entirely.
+   *
    * @param in input
+   *
    * @return the input
    */
-  private static CompletableFuture<FSDataInputStream> complete(CompletableFuture<FSDataInputStream> in) {
+  private static CompletableFuture<FSDataInputStream> complete(
+      CompletableFuture<FSDataInputStream> in) {
     LOG.debug("Created input stream {}", in);
     return in;
   }
 
+  /**
+   * was the status option passed down.
+   * @return true if the status was passed in.
+   */
+  public boolean wasStatusPropagated() {
+    return wasStatusPropagated;
+  }
 }

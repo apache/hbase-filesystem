@@ -19,11 +19,16 @@
 package org.apache.hadoop.hbase.oss;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FSDataOutputStreamBuilder;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +46,11 @@ import org.apache.hadoop.util.Progressable;
  * until closed.
  * As the lock is by thread, the same file can be opened
  * more than once by that same thread.
+ *
+ * Not all the getter methods in the wrapped builder
+ * are accessible, so to make them retrievable for
+ * testing, the superclass version of them are called
+ * as well as the wrapped class being involed.
  */
 @SuppressWarnings("rawtypes")
 class LockedCreateFileBuilder
@@ -58,9 +68,6 @@ class LockedCreateFileBuilder
    */
   private final TreeLockManager sync;
 
-  /**
-   * The wrapped builder.
-   */
   private final FSDataOutputStreamBuilder wrapped;
 
   /**
@@ -86,7 +93,7 @@ class LockedCreateFileBuilder
     LOG.debug("Building output stream for {}", path);
     AutoLock lock = sync.lockWrite(path);
     try {
-      FSDataOutputStream stream = wrapped.build();
+      FSDataOutputStream stream = getWrapped().build();
       return new AutoLock.LockedFSDataOutputStream(stream, lock);
     } catch (IOException e) {
       lock.close();
@@ -101,52 +108,62 @@ class LockedCreateFileBuilder
         "} " + super.toString();
   }
 
+
+
   @Override
   public LockedCreateFileBuilder overwrite(final boolean overwrite) {
-    wrapped.overwrite(overwrite);
+    super.overwrite(overwrite);
+    getWrapped().overwrite(overwrite);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder permission(@Nonnull final FsPermission perm) {
-    wrapped.permission(perm);
+    super.permission(perm);
+    getWrapped().permission(perm);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder bufferSize(final int bufSize) {
-    wrapped.bufferSize(bufSize);
+    super.bufferSize(bufSize);
+    getWrapped().bufferSize(bufSize);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder replication(final short replica) {
-    wrapped.replication(replica);
+    getWrapped().replication(replica);
     return getThisBuilder();
   }
 
 
   @Override
   public LockedCreateFileBuilder blockSize(final long blkSize) {
-    wrapped.blockSize(blkSize);
+    super.blockSize(blkSize);
+    getWrapped().blockSize(blkSize);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder recursive() {
-    wrapped.recursive();
+    super.recursive();
+    getWrapped().recursive();
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder progress(@Nonnull final Progressable prog) {
-    wrapped.progress(prog);
+    super.progress(prog);
+    getWrapped().progress(prog);
     return getThisBuilder();
   }
 
   @Override
-  public LockedCreateFileBuilder checksumOpt(@Nonnull final Options.ChecksumOpt chksumOpt) {
-    wrapped.checksumOpt(chksumOpt);
+  public LockedCreateFileBuilder checksumOpt(
+      @Nonnull final Options.ChecksumOpt chksumOpt) {
+    super.checksumOpt(chksumOpt);
+    getWrapped().checksumOpt(chksumOpt);
     return getThisBuilder();
   }
 
@@ -158,76 +175,76 @@ class LockedCreateFileBuilder
   @Override
   public LockedCreateFileBuilder opt(@Nonnull final String key,
       @Nonnull final String value) {
-    wrapped.opt(key, value);
+    getWrapped().opt(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder opt(@Nonnull final String key, final boolean value) {
-    wrapped.opt(key, value);
+    getWrapped().opt(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder opt(@Nonnull final String key, final int value) {
-    wrapped.opt(key, value);
+    getWrapped().opt(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder opt(@Nonnull final String key, final float value) {
-    wrapped.opt(key, value);
+    getWrapped().opt(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder opt(@Nonnull final String key, final double value) {
-    wrapped.opt(key, value);
+    getWrapped().opt(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder opt(@Nonnull final String key,
       @Nonnull final String... values) {
-    wrapped.opt(key, values);
+    getWrapped().opt(key, values);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder must(@Nonnull final String key,
       @Nonnull final String value) {
-    wrapped.must(key, value);
+    getWrapped().must(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder must(@Nonnull final String key, final boolean value) {
-    wrapped.must(key, value);
+    getWrapped().must(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder must(@Nonnull final String key, final int value) {
-    wrapped.must(key, value);
+    getWrapped().must(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder must(@Nonnull final String key, final float value) {
-    wrapped.must(key, value);
+    getWrapped().must(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder must(@Nonnull final String key, final double value) {
-    wrapped.must(key, value);
+    getWrapped().must(key, value);
     return getThisBuilder();
   }
 
   @Override
   public LockedCreateFileBuilder must(@Nonnull final String key,
       @Nonnull final String... values) {
-    wrapped.must(key, values);
+    getWrapped().must(key, values);
     return getThisBuilder();
   }
 
@@ -253,4 +270,51 @@ class LockedCreateFileBuilder
     return must(key, Long.toString(value));
   }
 
+  @Override
+  public Configuration getOptions() {
+    return getWrapped().getOptions();
+  }
+
+  @Override
+  public Set<String> getMandatoryKeys() {
+    return getWrapped().getMandatoryKeys();
+  }
+
+  /**
+   * Can't call into the wrapped class, so reimplement.
+   * {@inheritDoc}
+   */
+  @Override
+  public void rejectUnknownMandatoryKeys(final Collection<String> knownKeys,
+      final String extraErrorText)
+      throws IllegalArgumentException {
+    rejectUnknownMandatoryKeys(getMandatoryKeys(),
+        knownKeys, extraErrorText);
+  }
+
+  /**
+   * The wrapped builder.
+   */
+  public FSDataOutputStreamBuilder getWrapped() {
+    return wrapped;
+  }
+
+  @Override
+  public LockedCreateFileBuilder create() {
+    super.create();
+    getWrapped().create();
+    return getThisBuilder();
+  }
+
+  @Override
+  public LockedCreateFileBuilder append() {
+    super.create();
+    getWrapped().append();
+    return getThisBuilder();
+  }
+
+  @Override
+  public Progressable getProgress() {
+    return super.getProgress();
+  }
 }

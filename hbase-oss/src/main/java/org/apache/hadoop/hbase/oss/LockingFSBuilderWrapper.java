@@ -19,13 +19,15 @@
 package org.apache.hadoop.hbase.oss;
 
 import java.io.IOException;
-import java.util.function.Function;
+import java.util.Collection;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.impl.AbstractFSBuilderImpl;
@@ -96,10 +98,9 @@ public class LockingFSBuilderWrapper<S, B extends FSBuilder<S, B>>
    * @throws IOException failure.
    */
   @Override
-  public S build()
-      throws IOException {
+  public S build() throws IOException {
 
-    LOG.debug("building stream for  {}:", path);
+    LOG.debug("building stream for {}:", path);
     try (AutoLock l = sync.lock(path)) {
       S result = afterBuildTransform.apply(wrapped.build());
       LOG.debug("result is {}:", result);
@@ -114,6 +115,15 @@ public class LockingFSBuilderWrapper<S, B extends FSBuilder<S, B>>
   protected B getWrapped() {
     return wrapped;
   }
+
+  /**
+   * Get the wrapped builder.
+   * @return wrapped builder.
+   */
+  protected AbstractFSBuilderImpl getWrappedAsBuilderImpl() {
+    return (AbstractFSBuilderImpl)wrapped;
+  }
+
 
   @Override
   public B opt(@Nonnull final String key,
@@ -242,5 +252,22 @@ public class LockingFSBuilderWrapper<S, B extends FSBuilder<S, B>>
         "path=" + path +
         ", wrapped=" + wrapped +
         "} " + super.toString();
+  }
+
+  @Override
+  public Configuration getOptions() {
+    return getWrappedAsBuilderImpl().getOptions();
+  }
+
+  @Override
+  public Set<String> getMandatoryKeys() {
+    return getWrappedAsBuilderImpl().getMandatoryKeys();
+  }
+
+  @Override
+  protected void rejectUnknownMandatoryKeys(final Collection<String> knownKeys,
+      final String extraErrorText)
+      throws IllegalArgumentException {
+    super.rejectUnknownMandatoryKeys(knownKeys, extraErrorText);
   }
 }

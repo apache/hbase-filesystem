@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
  */
 public class S3ABindingSupport {
 
+  private final boolean isS3A;
   private final Function<FileStatus, Boolean> propagateStatusProbe;
 
   public S3ABindingSupport(FileSystem fs) {
@@ -36,24 +37,36 @@ public class S3ABindingSupport {
   }
 
   public S3ABindingSupport(String name) {
-
-    propagateStatusProbe = name
-        .equals("org.apache.hadoop.fs.s3a.S3AFileSystem")
+    isS3A = name
+        .equals("org.apache.hadoop.fs.s3a.S3AFileSystem");
+    propagateStatusProbe = isS3A
         ? S3ABindingSupport::allowOnlyS3A
         : S3ABindingSupport::allowAll;
   }
 
+  /**
+   * Is the FS s3a?
+   * @return true if the fs classname is that of s3afs.
+   */
+  public boolean isS3A() {
+    return isS3A;
+  }
+
+  /**
+   * Get the status probe of the fs.
+   * @return the status probe
+   */
   public Function<FileStatus, Boolean> getPropagateStatusProbe() {
     return propagateStatusProbe;
   }
 
-  private static boolean allowAll(FileStatus st) {
-    return true;
+  public static boolean allowAll(FileStatus st) {
+    return st != null;
   }
 
-  private static boolean allowOnlyS3A(FileStatus st) {
-    return st.getClass().getName()
-        .equals("org.apache.hadoop.fs.s3a.S3AFileStatus");
+  public static boolean allowOnlyS3A(FileStatus st) {
+    return st != null &&
+        st.getClass().getName().equals("org.apache.hadoop.fs.s3a.S3AFileStatus");
   }
 
 }
