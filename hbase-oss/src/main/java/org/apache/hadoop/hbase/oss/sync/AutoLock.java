@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.yetus.audience.InterfaceStability;
 
@@ -191,6 +192,11 @@ public interface AutoLock extends AutoCloseable {
     public void setDropBehind(Boolean dropBehind) throws IOException {
       checkClosed();
       stream.setDropBehind(dropBehind);
+    }
+
+    @Override
+    public IOStatistics getIOStatistics() {
+      return stream.getIOStatistics();
     }
   }
 }

@@ -44,7 +44,7 @@ public class TestCreateFileBuilder extends HBaseObjectStoreSemanticsTest {
   public void testCreateOverlappingBuilders() throws Exception {
     Path path = testPath("testCreateOverlappingBuilders");
 
-    FSDataOutputStream out = null;
+    FSDataOutputStream stream2 = null;
     try {
       FSDataOutputStreamBuilder builder1 = hboss.createFile(path)
           .overwrite(false);
@@ -54,26 +54,35 @@ public class TestCreateFileBuilder extends HBaseObjectStoreSemanticsTest {
       // even before the stream is closed, the first builder's build
       // call must fail.
       LOG.info("building {}:", builder2);
-      out = builder2.build();
+      stream2 = builder2.build();
 
-      Assertions.assertThat(out)
+      Assertions.assertThat(stream2)
           .describedAs("expected a LockedFSDataOutputStream")
           .isInstanceOf(AutoLock.LockedFSDataOutputStream.class);
 
-      LOG.info("Output stream  {}:", out);
-      out.write(0);
+      LOG.info("Output stream  {}:", stream2);
+      stream2.write(0);
 
       LOG.info("building {}", builder1);
+      // copy to reference in the lambda
+      final FSDataOutputStream s2 = stream2;
 
-      intercept(FileAlreadyExistsException.class, () ->
-          builder1.build());
-      out.close();
+      intercept(FileAlreadyExistsException.class, () -> {
+        FSDataOutputStream stream1 = builder1.build();
+        String err = "Expected builder1.build() of "
+            + builder1 + " to fail but it returned a stream "
+            + stream1 + " while builder2's stream is "
+            + s2;
+        LOG.error(err);
+        return err;
+      });
+      stream2.close();
       // try twice
-      out.close();
+      stream2.close();
 
     } finally {
-      if (out != null) {
-        out.close();
+      if (stream2 != null) {
+        stream2.close();
       }
       hboss.delete(path, false);
     }

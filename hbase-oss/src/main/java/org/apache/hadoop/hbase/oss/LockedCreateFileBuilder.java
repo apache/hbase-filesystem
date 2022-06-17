@@ -93,6 +93,13 @@ class LockedCreateFileBuilder
   }
 
   @Override
+  public String toString() {
+    return "LockedCreateFileBuilder{" +
+        "path=" + path +
+        "} " + super.toString();
+  }
+
+  @Override
   public LockedCreateFileBuilder overwrite(final boolean overwrite) {
     wrapped.overwrite(overwrite);
     return getThisBuilder();

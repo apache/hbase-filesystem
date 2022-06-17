@@ -53,6 +53,8 @@ import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.fs.statistics.IOStatistics;
+import org.apache.hadoop.fs.statistics.IOStatisticsSource;
 import org.apache.hadoop.hbase.HBaseInterfaceAudience;
 import org.apache.hadoop.hbase.oss.metrics.MetricsOSSSource;
 import org.apache.hadoop.hbase.oss.metrics.MetricsOSSSourceImpl;
@@ -100,7 +102,9 @@ import static org.apache.hadoop.hbase.oss.Constants.CAPABILITY_HBOSS;
  */
 @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)
 @InterfaceStability.Unstable
-public class HBaseObjectStoreSemantics extends FilterFileSystem {
+public class HBaseObjectStoreSemantics extends FilterFileSystem
+    implements IOStatisticsSource {
+
   private static final Logger LOG =
         LoggerFactory.getLogger(HBaseObjectStoreSemantics.class);
 
@@ -973,4 +977,15 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem {
         super.createFile(path));
   }
 
+  /**
+   * Return the IOStatistics of the wrapped FS, or null if
+   * it doesn't have the API.
+   * @return any IOStatistics of the wrapped FS.
+   */
+  @Override
+  public IOStatistics getIOStatistics() {
+    return (fs instanceof IOStatisticsSource)
+        ? ((IOStatisticsSource)fs).getIOStatistics()
+        : null;
+  }
 }
