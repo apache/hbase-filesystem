@@ -39,6 +39,8 @@ import org.apache.hadoop.util.Progressable;
  * The lock is acquired in the {@link #build()} call
  * and kept in the output stream where it is held
  * until closed.
+ * As the lock is by thread, the same file can be opened
+ * more than once by that same thread.
  */
 @SuppressWarnings("rawtypes")
 class LockedCreateFileBuilder
