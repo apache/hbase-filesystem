@@ -65,6 +65,9 @@
     <!-- system property for the hadoop version passed
          down in tests. -->
     <HBOSS_HADOOP_VERSION>3.3</HBOSS_HADOOP_VERSION>
+    <!-- Code coverage properties -->
+    <clover-maven-plugin.version>4.4.1</clover-maven-plugin.version>
+    <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
   </properties>
 
   <modules>
@@ -200,6 +203,95 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>clover</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+        <property>
+          <name>clover</name>
+        </property>
+      </activation>
+      <properties>
+        <cloverDatabase>${project.build.directory}/clover/code-coverage.db</cloverDatabase>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.openclover</groupId>
+            <artifactId>clover-maven-plugin</artifactId>
+            <configuration>
+              <cloverDatabase>${cloverDatabase}</cloverDatabase>
+              <cloverMergeDatabase>${cloverDatabase}</cloverMergeDatabase>
+              <outputDirectory>${project.build.directory}/clover</outputDirectory>
+              <alwaysReport>true</alwaysReport>
+              <generateHistorical>false</generateHistorical>
+              <generateHtml>true</generateHtml>
+              <includesTestSourceRoots>true</includesTestSourceRoots>
+              <includesAllSourceRoots>false</includesAllSourceRoots>
+              <includes>
+                <include>**/org/apache/**/*.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/src/main/appended-resources/**/*</exclude>
+              </excludes>
+            </configuration>
+            <executions>
+              <execution>
+                <id>clover-setup</id>
+                <goals>
+                  <goal>setup</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.openclover</groupId>
+              <artifactId>clover-maven-plugin</artifactId>
+              <version>${clover-maven-plugin.version}</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+
+    <profile>
+      <id>sonar</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+        <property>
+          <name>sonar</name>
+        </property>
+      </activation>
+      <properties>
+        <sonar.core.codeCoveragePlugin>clover</sonar.core.codeCoveragePlugin>
+        <sonar.clover.version>${clover-maven-plugin.version}</sonar.clover.version>
+        <sonar.clover.reportPath>${project.build.directory}/clover/clover.xml</sonar.clover.reportPath>
+        <sonar.surefire.reportsPath>${project.build.directory}/surefire-reports</sonar.surefire.reportsPath>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.sonarsource.scanner.maven</groupId>
+              <artifactId>sonar-maven-plugin</artifactId>
+              <version>${sonar-maven-plugin.version}</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+
   </profiles>
 
 </project>
