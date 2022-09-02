@@ -35,6 +35,10 @@ public class Constants  {
 
   public static final String WAIT_INTERVAL_WARN = "fs.hboss.lock-wait.interval.warning";
 
+  /**
+   * PathCapabilities probe for hboss support: if the probe succeeds then
+   * the client is using HBoss
+   */
   public static final String CAPABILITY_HBOSS =
       "org.apache.hadoop.hbase.hboss";
 

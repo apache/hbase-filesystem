@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -44,11 +45,14 @@ import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.fs.s3a.S3AFileStatus;
 import org.apache.hadoop.hbase.oss.sync.AutoLock;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.Progressable;
 
 import static org.apache.hadoop.fs.statistics.IOStatisticsLogging.ioStatisticsToPrettyString;
+import static org.apache.hadoop.hbase.oss.FileStatusBindingSupport.S3AFS;
 import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 
 /**
@@ -63,7 +67,6 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
   public static final int SLEEP_INTERVAL = 5_000;
   public static final int TIMEOUT = 15;
   public static final String EXPERIMENTAL_FADVISE = "fs.s3a.experimental.input.fadvise";
-
 
   /**
    * Prefix for all standard filesystem options: {@value}.
@@ -299,6 +302,7 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
   @Test
   public void testCreateOptionPassthrough() {
     Path path = testPath("testCreateOptionPassthrough");
+    AtomicLong progress = new AtomicLong();
 
     LockedCreateFileBuilder builder = (LockedCreateFileBuilder)
         hboss.createFile(path)
@@ -310,8 +314,7 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
             .recursive()
             .blockSize(32_000_000)
             .checksumOpt(Options.ChecksumOpt.createDisabled())
-            .progress(() -> {
-            })
+            .progress(progress::incrementAndGet)
             .must("m1", 0)
             .must("m2", 0L)
             .must("m3", "s")
@@ -329,8 +332,14 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
     // and that the wrapped class is happy
     assertMandatoryKeysComplete(builder.getWrapped().getMandatoryKeys());
     assertAllKeysComplete(builder.getWrapped().getOptions());
-    Assertions.assertThat(builder.getProgress())
+    Progressable progressable = builder.getProgress();
+    Assertions.assertThat(progressable)
+        .describedAs("progress callback")
         .isNotNull();
+    progressable.progress();
+    Assertions.assertThat(progress.get())
+        .describedAs("progress callback counter")
+        .isEqualTo(1);
   }
 
   /**
@@ -384,8 +393,9 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
       readEmptyFile(builder);
       // if the fs was s3a, look more closely
 
-      S3ABindingSupport s3ABindingSupport = new S3ABindingSupport(hboss.getRawFileSystem());
-      if (s3ABindingSupport.isS3A()) {
+      FileStatusBindingSupport bindingSupport =
+          new FileStatusBindingSupport(hboss.getRawFileSystem());
+      if (bindingSupport.isS3A()) {
         // try again with a different status
         LOG.info("Opening s3a file with different status than {}", status);
         LockedOpenFileBuilder builder2 =
@@ -404,6 +414,56 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
 
   }
 
+  /**
+   * Test the status propgation logic for non-s3a filesystems.
+   */
+  @Test
+  public void testAllowAllBinding() throws Throwable {
+    FileStatusBindingSupport bindingSupport = new FileStatusBindingSupport(
+        "org.apache.hadoop.fs.LocalFileSystem");
+    Assertions.assertThat(bindingSupport.isS3A())
+        .describedAs("binding to local fs must not be s3a")
+        .isFalse();
+    Path p = new Path("file://path/file");
+    FileStatus st = new FileStatus(0, false, 1, 1, 0, p);
+    Assertions.assertThat(bindingSupport.getPropagateStatusProbe().apply(p, st))
+        .describedAs("allow(%s, %s)", p, st)
+        .isTrue();
+    Path other = new Path("file://other");
+    Assertions.assertThat(bindingSupport.getPropagateStatusProbe().apply(other, st))
+        .describedAs("allow(%s, %s)", other, st)
+        .isFalse();
+  }
+  /**
+   * Test the status propgation logic for an s3a filesystems.
+   */
+  @Test
+  public void testAllowS3ABinding() throws Throwable {
+    FileStatusBindingSupport bindingSupport = new FileStatusBindingSupport(S3AFS);
+    Assertions.assertThat(bindingSupport.isS3A())
+        .describedAs("binding to S3A fs")
+        .isTrue();
+    Path p = new Path("s3a://bucket/path/file");
+    FileStatus st = new S3AFileStatus(false, p, "owner");
+    Assertions.assertThat(bindingSupport.getPropagateStatusProbe().apply(p, st))
+        .describedAs("allow(%s, %s)", p, st)
+        .isTrue();
+    Path other = new Path("file://other");
+    Assertions.assertThat(bindingSupport.getPropagateStatusProbe().apply(other, st))
+        .describedAs("allow(%s, %s)", other, st)
+        .isFalse();
+
+    // instances which are not s3a fS are skipped
+    FileStatus st2 =  new FileStatus(0, false, 1, 1, 0, p);
+    Assertions.assertThat(bindingSupport.getPropagateStatusProbe().apply(p, st2))
+        .describedAs("allow(%s, %s)", p, st2)
+        .isFalse();
+  }
+
+  /**
+   * Open and read an empty file.
+   * @param builder builder.
+   */
   private void readEmptyFile(LockedOpenFileBuilder builder)
       throws IOException, ExecutionException, InterruptedException {
     try (FSDataInputStream in = builder.build().get()) {
@@ -414,6 +474,8 @@ public class TestFileBuilderAPI extends HBaseObjectStoreSemanticsTest {
           ioStatisticsToPrettyString(in.getIOStatistics()));
     }
   }
+
+
   /**
    * Assert that the optional and mandatory keys are present.
    *

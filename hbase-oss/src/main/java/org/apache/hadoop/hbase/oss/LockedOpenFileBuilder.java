@@ -19,7 +19,7 @@
 package org.apache.hadoop.hbase.oss;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
@@ -50,14 +50,14 @@ public class LockedOpenFileBuilder extends
   private static final Logger LOG =
       LoggerFactory.getLogger(LockedOpenFileBuilder.class);
 
-  private final Function<FileStatus, Boolean> propagateStatusProbe;
+  private final BiFunction<Path, FileStatus, Boolean> propagateStatusProbe;
 
   private boolean wasStatusPropagated;
 
   public LockedOpenFileBuilder(@Nonnull final Path path,
       final TreeLockManager sync,
       final FutureDataInputStreamBuilder wrapped,
-      final Function<FileStatus, Boolean> propagateStatusProbe) {
+      final BiFunction<Path, FileStatus, Boolean> propagateStatusProbe) {
     super(path, sync, wrapped,
         LockedOpenFileBuilder::complete);
     this.propagateStatusProbe = propagateStatusProbe;
@@ -72,7 +72,7 @@ public class LockedOpenFileBuilder extends
    */
   public FutureDataInputStreamBuilder withFileStatus(
       final FileStatus status) {
-    if (status != null && propagateStatusProbe.apply(status)) {
+    if (status != null && propagateStatusProbe.apply(getPath(), status)) {
       wasStatusPropagated = true;
       getWrapped().withFileStatus(status);
     }

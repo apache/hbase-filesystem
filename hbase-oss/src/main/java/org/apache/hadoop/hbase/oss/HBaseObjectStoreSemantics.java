@@ -70,6 +70,7 @@ import org.apache.yetus.audience.InterfaceStability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.fs.statistics.IOStatisticsSupport.retrieveIOStatistics;
 import static org.apache.hadoop.hbase.oss.Constants.CAPABILITY_HBOSS;
 
 /**
@@ -111,7 +112,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem
   private TreeLockManager sync;
   private MetricsOSSSource metrics;
 
-  private S3ABindingSupport bindingSupport;
+  private FileStatusBindingSupport bindingSupport;
 
   /**
    * Get the tree lock for this instance; null until
@@ -142,7 +143,7 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem
     fs = FileSystem.get(name, internalConf);
     sync = TreeLockManager.get(fs);
     metrics = MetricsOSSSourceImpl.getInstance();
-    bindingSupport = new S3ABindingSupport(fs);
+    bindingSupport = new FileStatusBindingSupport(fs);
   }
 
   @InterfaceAudience.Private
@@ -984,8 +985,6 @@ public class HBaseObjectStoreSemantics extends FilterFileSystem
    */
   @Override
   public IOStatistics getIOStatistics() {
-    return (fs instanceof IOStatisticsSource)
-        ? ((IOStatisticsSource)fs).getIOStatistics()
-        : null;
+    return retrieveIOStatistics(fs);
   }
 }
