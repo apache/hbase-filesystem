@@ -18,8 +18,9 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import org.junit.Test;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.apache.hadoop.hbase.oss.TestUtils;
 
@@ -29,7 +30,7 @@ import org.apache.hadoop.hbase.oss.TestUtils;
  * areZeroByteFilesEncrypted() method to always return true.
  * TestHBOSSContractOpen remains to be run in the general case.
  */
-public class TestHBOSSContractOpenS3A extends AbstractContractOpenTest {
+public class TestHBOSSContractOpenS3A extends TestHBOSSContractOpen {
 
   @Override
   protected Configuration createConfiguration() {
@@ -49,5 +50,14 @@ public class TestHBOSSContractOpenS3A extends AbstractContractOpenTest {
    */
   protected boolean areZeroByteFilesEncrypted() {
     return true;
+  }
+
+  /**
+   * HADOOP-16202 cut this test as it is now OK to
+   * pass down a null status.
+   */
+  @Test
+  public void testOpenFileNullStatus() {
+
   }
 }

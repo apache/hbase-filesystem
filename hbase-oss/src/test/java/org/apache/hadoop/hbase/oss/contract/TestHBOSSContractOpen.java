@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hbase.oss.contract;
 
+import org.junit.Test;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.contract.AbstractContractOpenTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
@@ -40,5 +42,14 @@ public class TestHBOSSContractOpen extends AbstractContractOpenTest {
     AbstractFSContract contract = new HBOSSContract(conf);
     TestUtils.runIfS3(false, conf);
     return contract;
+  }
+
+  /**
+   * HADOOP-16202 cut this test as it is now OK to
+   * pass down a null status.
+   */
+  @Test
+  public void testOpenFileNullStatus() {
+
   }
 }
