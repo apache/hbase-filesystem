@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hbase.oss;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -29,6 +28,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 
 public class TestCreateNonRecursive extends HBaseObjectStoreSemanticsTest {
 
@@ -41,15 +42,8 @@ public class TestCreateNonRecursive extends HBaseObjectStoreSemanticsTest {
       out = hboss.createNonRecursive(serialPath, false, 1024, (short)1, 1024, null);
       out.close();
 
-      boolean exceptionThrown = false;
-      try {
-        out = hboss.createNonRecursive(serialPath, false, 1024, (short)1, 1024, null);
-      } catch(FileAlreadyExistsException e) {
-        exceptionThrown = true;
-      }
-      if (!exceptionThrown) {
-        Assert.fail("Second call to createNonRecursive should throw FileAlreadyExistsException, but didn't.");
-      }
+      intercept(FileAlreadyExistsException.class, () ->
+        hboss.createNonRecursive(serialPath, false, 1024, (short)1, 1024, null));
     } finally {
       hboss.delete(serialPath);
     }
@@ -60,32 +54,30 @@ public class TestCreateNonRecursive extends HBaseObjectStoreSemanticsTest {
     int experiments = 10;
     int experimentSize = 10;
     for (int e = 0; e < experiments; e++) {
-      ArrayList<Callable<Boolean>> callables = new ArrayList<Callable<Boolean>>(experimentSize);
-      ArrayList<Future<Boolean>> futures = new ArrayList<Future<Boolean>>(experimentSize);
+      ArrayList<Callable<Boolean>> callables = new ArrayList<>(experimentSize);
+      ArrayList<Future<Boolean>> futures = new ArrayList<>(experimentSize);
 
       Path parallelPath = testPath("testCreateNonRecursiveParallel" + e);
       ThreadPoolExecutor executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(10);
       executor.prestartAllCoreThreads();
       for (int i = 0; i < experimentSize; i++) {
-        callables.add(new Callable<Boolean>() {
-          public Boolean call() throws IOException {
-            FSDataOutputStream out = null;
-            boolean exceptionThrown = false;
-            try {
-              out = hboss.createNonRecursive(parallelPath, false, 1024, (short)1, 1024, null);
-            } catch(FileAlreadyExistsException e) {
-              exceptionThrown = true;
-            } finally {
-              if (out != null) {
-                out.close();
-              }
+        callables.add(() -> {
+          FSDataOutputStream out = null;
+          boolean exceptionThrown = false;
+          try {
+            out = hboss.createNonRecursive(parallelPath, false, 1024, (short)1, 1024, null);
+          } catch(FileAlreadyExistsException e1) {
+            exceptionThrown = true;
+          } finally {
+            if (out != null) {
+              out.close();
             }
-            return exceptionThrown;
           }
+          return exceptionThrown;
         });
       }
       try {
-        for (Callable callable : callables) {
+        for (Callable<Boolean> callable : callables) {
           // This is in a separate loop to try and get them all as overlapped as possible
           futures.add(executor.submit(callable));
         }
@@ -101,6 +93,7 @@ public class TestCreateNonRecursive extends HBaseObjectStoreSemanticsTest {
               experimentSize - 1, exceptionsThrown);
       } finally {
         hboss.delete(parallelPath);
+        executor.shutdown();
       }
     }
   }

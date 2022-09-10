@@ -47,7 +47,9 @@ public class LocalTreeLockManager extends TreeLockManager {
   @Override
   protected void writeLock(Path p) {
     createLocksIfNeeded(p);
-    index.get(p).lock.writeLock().lock();
+    LockNode node = index.get(p);
+    LOG.debug("Acquiring write lock on {}", node);
+    node.lock.writeLock().lock();
   }
 
   @Override
@@ -56,6 +58,7 @@ public class LocalTreeLockManager extends TreeLockManager {
       LockNode node = index.get(p);
       // Node to unlock may already be gone after deletes
       if (node != null) {
+        LOG.debug("Releasing write lock on {}", node);
         node.lock.writeLock().unlock();
       }
     } catch(IllegalMonitorStateException e) {
@@ -141,6 +144,13 @@ public class LocalTreeLockManager extends TreeLockManager {
     public Map<Path, LockNode> children = new HashMap<>();
     public ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
+    @Override
+    public String toString() {
+      return "LockNode{" +
+          "path=" + path +
+          ", lock=" + lock +
+          '}';
+    }
   }
 
   private Map<Path, LockNode> index = new HashMap<>();
