@@ -54,10 +54,10 @@
     <enforcer.version>3.0.0-M3</enforcer.version>
     <extra.enforcer.version>1.2</extra.enforcer.version>
     <hadoop.version>3.3.2</hadoop.version>
-    <hbase.version>2.3.6</hbase.version>
+    <hbase.version>2.5.4</hbase.version>
     <hbase-thirdparty.version>3.5.1</hbase-thirdparty.version>
     <junit.version>4.12</junit.version>
-    <log4j.version>1.2.17</log4j.version>
+    <log4j2.version>2.17.2</log4j2.version>
     <slf4j.version>1.7.25</slf4j.version>
     <!-- Keep this in sync with the version of ZK
          that the corresponding HBase version is using. -->
