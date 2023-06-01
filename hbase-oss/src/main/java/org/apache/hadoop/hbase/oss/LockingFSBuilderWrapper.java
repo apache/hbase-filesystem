@@ -135,30 +135,53 @@ public class LockingFSBuilderWrapper<S, B extends FSBuilder<S, B>>
 
   @Override
   public B opt(@Nonnull final String key, final boolean value) {
-    LOG.debug("{}: option {}=\"{}\"", path, key, value);
-    wrapped.opt(key, value);
-    return getThisBuilder();
+    return opt(key, Boolean.toString(value));
+  }
+
+  /**
+   * sets the long value.
+   * @since Hadoop-3.3.6
+   * Method added in HADOOP-18274.
+   * @param key key
+   * @param value long value
+   * @return the builder
+   */
+  public B optLong(@Nonnull final String key, final long value) {
+    return opt(key, Long.toString(value));
+  }
+
+  /**
+   * Set optional double parameter for the Builder.
+   * @since Hadoop-3.3.6
+   * @see #opt(String, String)
+   */
+  public B optDouble(@Nonnull final String key, double value) {
+    return opt(key, Double.toString(value));
   }
 
   @Override
   public B opt(@Nonnull final String key, final int value) {
-    LOG.debug("{}: option {}=\"{}\"", path, key, value);
-    wrapped.opt(key, value);
-    return getThisBuilder();
+    return optLong(key, value);
   }
 
-  @Override
+  /**
+   * Sets the LONG value, not any float value.
+   * @param key key
+   * @param value value to convert to long
+   * @return the builder.
+   */
   public B opt(@Nonnull final String key, final float value) {
-    LOG.debug("{}: option {}=\"{}\"", path, key, value);
-    wrapped.opt(key, value);
-    return getThisBuilder();
+    return optLong(key, (long) value);
   }
 
-  @Override
+  /**
+   * Sets the LONG value, not any double value.
+   * @param key key
+   * @param value value to convert to long
+   * @return the builder.
+   */
   public B opt(@Nonnull final String key, final double value) {
-    LOG.debug("{}: option {}=\"{}\"", path, key, value);
-    wrapped.opt(key, value);
-    return getThisBuilder();
+    return optLong(key, (long) value);
   }
 
   @Override
@@ -176,35 +199,77 @@ public class LockingFSBuilderWrapper<S, B extends FSBuilder<S, B>>
     return getThisBuilder();
   }
 
+  /**
+   * sets the long value.
+   * @since Hadoop-3.3.6
+   */
+  public B mustLong(@Nonnull final String key, final long value) {
+    return must(key, Long.toString(value));
+  }
+
+  /**
+   * Sets the double value.
+   * @param key key
+   * @param value value to set as a double
+   * @return the builder.
+   * @since Hadoop-3.3.6
+   */
+  public B mustDouble(@Nonnull final String key, double value) {
+    return must(key, Double.toString(value));
+  }
+
   @Override
   public B must(@Nonnull final String key, final boolean value) {
-    LOG.debug("{}: must {}=\"{}\"", path, key, value);
-    wrapped.must(key, value);
-    return getThisBuilder();
+    return must(key, Boolean.toString(value));
   }
 
+  /**
+   * Set mandatory int option.
+   *
+   * @see #must(String, String)
+   */
   @Override
-  public B must(@Nonnull final String key, final int value) {
-    LOG.debug("{}: must {}=\"{}\"", path, key, value);
-    wrapped.must(key, value);
-    return getThisBuilder();
+  public B must(@Nonnull final String key, int value) {
+    return mustLong(key, value);
   }
 
-  @Override
-  public B must(@Nonnull final String key, final float value) {
-    LOG.debug("{}: must {}=\"{}\"", path, key, value);
-    wrapped.must(key, value);
-    return getThisBuilder();
+  /**
+   * Configure with a long value.
+   * must(String, Long) was not on the original interface,
+   * though it is in recent hadoop builds.
+   * It is implemented in the wrapper by converting
+   * to a string and calling the wrapper's
+   * {@code #must(String, String)}.
+   * It is NOT declared @Override so still compiles and
+   * runs against hadoop 3.3.0.
+   * @param key key to set
+   * @param value long value
+   * @return the builder
+   */
+  public final B must(@Nonnull final String key, final long value) {
+    return mustLong(key, value);
   }
 
-  @Override
-  public B must(@Nonnull final String key, final double value) {
-    LOG.debug("{}: must {}=\"{}\"", path, key, value);
-    wrapped.must(key, value);
-    return getThisBuilder();
+  /**
+   * Sets the LONG value, not any float value.
+   * @param key key
+   * @param value value to convert to long
+   * @return the builder.
+   */
+  public final B must(@Nonnull final String key, final float value) {
+    return mustLong(key, (long) value);
   }
 
-  @Override
+  /**
+   * Sets the LONG value, not any double value.
+   * @param key key
+   * @param value value to convert to long
+   * @return the builder.
+   */
+  public final B must(@Nonnull final String key, double value) {
+    return mustLong(key, (long) value);
+  }
+
   public B must(@Nonnull final String key,
       @Nonnull final String... values) {
     LOG.debug("{}: must {}=(values)", path, key);
@@ -227,23 +292,6 @@ public class LockingFSBuilderWrapper<S, B extends FSBuilder<S, B>>
    */
   public B opt(@Nonnull String key, long value) {
     return opt(key, Long.toString(value));
-  }
-
-  /**
-   * Configure with a long value.
-   * must(String, Long) was not on the original interface,
-   * though it is in recent hadoop builds.
-   * It is implemented in the wrapper by converting
-   * to a string and calling the wrapper's
-   * {@code #must(String, String)}.
-   * It is NOT declared @Override so still compiles and
-   * runs against hadoop 3.3.0.
-   * @param key key to set
-   * @param value long value
-   * @return the builder
-   */
-  public B must(@Nonnull String key, long value) {
-    return must(key, Long.toString(value));
   }
 
   @Override
